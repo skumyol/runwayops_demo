@@ -1,0 +1,1412 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>LLM-Supported Flight Disruption Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tiempos+Headline:wght@400;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+    <style>
+        :root {
+            --primary: #1e40af;
+            --secondary: #475569;
+            --accent: #3b82f6;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--background);
+        }
+        
+        .serif {
+            font-family: 'Tiempos Headline', serif;
+        }
+        
+        .hero-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 600;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .toc-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 280px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 2rem 1.5rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+        
+        .diagram-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .citation-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px dotted var(--accent);
+        }
+        
+        .citation-link:hover {
+            border-bottom: 1px solid var(--accent);
+        }
+        
+        .bento-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+        
+        .bento-main {
+            grid-row: 1 / 3;
+            background: linear-gradient(135deg, rgba(30, 64, 175, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+            padding: 3rem;
+            border-radius: 1rem;
+            border: 1px solid var(--border);
+        }
+        
+        .bento-side {
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 1px solid var(--border);
+        }
+        
+        .chart-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .mermaid-container {
+            display: flex;
+            justify-content: center;
+            min-height: 300px;
+            max-height: 800px;
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: auto;
+        }
+
+        .mermaid-container .mermaid {
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            cursor: grab;
+            transition: transform 0.3s ease;
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .mermaid-container .mermaid svg {
+            max-width: 100%;
+            height: 100%;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .mermaid-container .mermaid:active {
+            cursor: grabbing;
+        }
+
+        .mermaid-container.zoomed .mermaid {
+            height: 100%;
+            width: 100%;
+            cursor: grab;
+        }
+
+        .mermaid-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .mermaid-control-btn {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #374151;
+            font-size: 14px;
+            min-width: 36px;
+            height: 36px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mermaid-control-btn:hover {
+            background: #f8fafc;
+            border-color: #3b82f6;
+            color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        .mermaid-control-btn:active {
+            transform: scale(0.95);
+        }
+        
+        @media (max-width: 1024px) {
+            .toc-fixed {
+                transform: translateX(-100%);
+            }
+            
+            .toc-fixed.open {
+                transform: translateX(0);
+                box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .bento-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+            }
+            
+            .bento-main {
+                grid-row: 1;
+            }
+
+            .mermaid-control-btn:not(.reset-zoom) {
+                display: none;
+            }
+            .mermaid-controls {
+                top: auto;
+                bottom: 15px;
+                right: 15px;
+            }
+        }
+
+        /* For small screens (max-width: 768px) */
+        @media (max-width: 768px) {
+            .container {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+            .bento-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+                gap: 1rem;
+                margin: 1.5rem 0;
+            }
+            .bento-main {
+                padding: 1.5rem;
+            }
+            .bento-side {
+                padding: 1.5rem;
+            }
+            .hero-title {
+                font-size: 2rem;
+                line-height: 1.2;
+            }
+        }
+    </style>
+  <base target="_blank">
+</head>
+
+  <body>
+    <!-- Table of Contents -->
+    <nav class="toc-fixed">
+      <div class="mb-6">
+        <h3 class="serif text-lg font-semibold text-gray-900 mb-4">Contents</h3>
+        <ul class="space-y-2 text-sm">
+          <li>
+            <a class="citation-link" href="#executive-summary">Executive Summary</a>
+          </li>
+          <li>
+            <a class="citation-link" href="#architecture">1. System Architecture</a>
+          </li>
+          <li class="ml-4">
+            <a class="citation-link" href="#multi-agent">1.1 Multi-Agent System</a>
+          </li>
+          <li class="ml-4">
+            <a class="citation-link" href="#components">1.2 Core Components</a>
+          </li>
+          <li class="ml-4">
+            <a class="citation-link" href="#diagram">1.3 Architecture Diagram</a>
+          </li>
+          <li>
+            <a class="citation-link" href="#prediction">2. Predictive System</a>
+          </li>
+          <li class="ml-4">
+            <a class="citation-link" href="#data-stream">2.1 Data Stream</a>
+          </li>
+          <li class="ml-4">
+            <a class="citation-link" href="#signal-generator">2.2 Signal Generator</a>
+          </li>
+          <li>
+            <a class="citation-link" href="#agents">3. Agentic Structure</a>
+          </li>
+          <li class="ml-4">
+            <a class="citation-link" href="#orchestrator">3.1 Orchestrator Agent</a>
+          </li>
+          <li class="ml-4">
+            <a class="citation-link" href="#sub-agents">3.2 Sub-Agents</a>
+          </li>
+          <li>
+            <a class="citation-link" href="#implementation">4. Implementation</a>
+          </li>
+          <li class="ml-4">
+            <a class="citation-link" href="#phases">4.1 Development Phases</a>
+          </li>
+          <li class="ml-4">
+            <a class="citation-link" href="#tech-stack">4.2 Technology Stack</a>
+          </li>
+          <li>
+            <a class="citation-link" href="#case-studies">5. Case Studies</a>
+          </li>
+          <li class="ml-4">
+            <a class="citation-link" href="#recoverai">5.1 RecoverAI</a>
+          </li>
+          <li class="ml-4">
+            <a class="citation-link" href="#cathay">5.2 Cathay Pacific</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Mobile TOC Toggle -->
+    <button class="lg:hidden fixed top-4 left-4 z-50 bg-white p-2 rounded-lg shadow-lg border" onclick="toggleTOC()">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Hero Section -->
+      <section class="px-8 py-12">
+        <div class="max-w-6xl mx-auto">
+          <div class="bento-grid">
+            <div class="bento-main">
+              <h1 class="hero-title serif mb-6">
+                <em>Prototyping an LLM-Supported Flight Disruption Management System</em>
+              </h1>
+              <p class="text-xl text-gray-600 leading-relaxed">
+                A multi-agent architecture for intelligent disruption prediction, orchestration, and recovery in airline operations
+              </p>
+            </div>
+
+            <div class="bento-side">
+              <h3 class="serif text-lg font-semibold mb-4">Key Innovation</h3>
+              <p class="text-sm text-gray-600">
+                Moving from reactive disruption management to proactive prediction and automated recovery through LLM-powered orchestration
+              </p>
+            </div>
+
+            <div class="bento-side">
+              <h3 class="serif text-lg font-semibold mb-4">Architecture Pattern</h3>
+              <p class="text-sm text-gray-600">
+                Modular multi-agent system with specialized components for data ingestion, prediction, orchestration, and execution
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Executive Summary -->
+      <section class="px-8 py-12 bg-white" id="executive-summary">
+        <div class="max-w-4xl mx-auto">
+          <h2 class="serif text-3xl font-bold mb-8">Executive Summary</h2>
+          <div class="prose prose-lg max-w-none">
+            <p class="text-xl leading-relaxed text-gray-700 mb-6">
+              This report outlines a comprehensive architecture for an LLM-supported flight disruption management system designed to transform how airlines handle operational disruptions. The system represents a paradigm shift from reactive, manual processes to proactive, intelligent automation.
+            </p>
+
+            <div class="grid md:grid-cols-2 gap-8 my-8">
+              <div class="bg-blue-50 p-6 rounded-lg">
+                <h3 class="serif text-xl font-semibold mb-3 text-blue-900">Current Challenge</h3>
+                <p class="text-blue-800">Traditional disruption management relies on siloed processes, manual coordination, and reactive decision-making, leading to cascading delays, passenger dissatisfaction, and significant financial costs.</p>
+              </div>
+
+              <div class="bg-green-50 p-6 rounded-lg">
+                <h3 class="serif text-xl font-semibold mb-3 text-green-900">Proposed Solution</h3>
+                <p class="text-green-800">A modular multi-agent system that combines predictive analytics, LLM-powered orchestration, and specialized execution agents to automate and optimize the entire disruption management lifecycle.</p>
+              </div>
+            </div>
+
+            <p>
+              The core innovation lies in the system&#39;s ability to predict disruptions before they occur, simulate multiple recovery scenarios using LLM-powered reasoning, and coordinate specialized agents to execute optimized recovery plans. This approach addresses the complex interdependencies between aircraft scheduling, crew management, passenger rebooking, and financial implications in a more agile and efficient manner than traditional sequential processes.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- System Architecture -->
+      <section class="px-8 py-12" id="architecture">
+        <div class="max-w-6xl mx-auto">
+          <h2 class="serif text-3xl font-bold mb-8">1. System Architecture Overview</h2>
+
+          <div class="mb-12" id="multi-agent">
+            <h3 class="serif text-2xl font-semibold mb-6">1.1 High-Level Architecture: A Multi-Agent System</h3>
+            <p class="mb-6">
+              The proposed flight disruption management system is architected as a sophisticated multi-agent system, a design pattern that decomposes a complex problem into smaller, manageable, and specialized tasks handled by autonomous agents <a class="citation-link" href="https://medium.com/thedeephub/an-ai-agentic-solution-for-flight-disruption-management-recoverai-code-tutorial-d98524f815f3" target="_blank">[165]</a>. This modular approach represents a significant departure from traditional, monolithic systems, offering superior scalability, maintainability, and fault tolerance <a class="citation-link" href="https://magai.co/what-is-modular-ai-architecture/" target="_blank">[156]</a>.
+            </p>
+
+            <div class="bg-gray-50 p-6 rounded-lg mb-8">
+              <h4 class="font-semibold mb-4">Key Advantages of Multi-Agent Architecture:</h4>
+              <ul class="space-y-2">
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                  <span><strong>Scalability:</strong> New capabilities can be added by introducing new agents without overhauling the entire system</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                  <span><strong>Parallel Processing:</strong> Multiple agents can work simultaneously on different aspects of disruption recovery</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                  <span><strong>Fault Tolerance:</strong> Failure in one agent doesn&#39;t cascade; other agents can continue functioning</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                  <span><strong>Human-in-the-Loop:</strong> Operations staff can oversee and intervene through dedicated dashboard interfaces</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mb-12" id="components">
+            <h3 class="serif text-2xl font-semibold mb-6">1.2 Core Components and Their Interactions</h3>
+
+            <div class="grid md:grid-cols-2 gap-8 mb-8">
+              <div class="bg-white p-6 rounded-lg border">
+                <h4 class="font-semibold mb-3 text-blue-600">Data Ingestion Layer</h4>
+                <p class="text-sm text-gray-600 mb-3">Real-time data streams from multiple sources including flight schedules, weather updates, air traffic advisories, and airport operations.</p>
+                <ul class="text-xs space-y-1 text-gray-500">
+                  <li>• Flight status and schedules</li>
+                  <li>• Weather intelligence (Tomorrow.io)</li>
+                  <li>• Air traffic control data</li>
+                  <li>• Airport operational status</li>
+                </ul>
+              </div>
+
+              <div class="bg-white p-6 rounded-lg border">
+                <h4 class="font-semibold mb-3 text-green-600">Predictive Model</h4>
+                <p class="text-sm text-gray-600 mb-3">AI model trained to analyze incoming data and forecast potential disruptions with probability scores and duration estimates.</p>
+                <ul class="text-xs space-y-1 text-gray-500">
+                  <li>• Historical flight data analysis</li>
+                  <li>• Pattern recognition</li>
+                  <li>• Probability scoring</li>
+                  <li>• Lead time prediction</li>
+                </ul>
+              </div>
+
+              <div class="bg-white p-6 rounded-lg border">
+                <h4 class="font-semibold mb-3 text-purple-600">Orchestrator Agent</h4>
+                <p class="text-sm text-gray-600 mb-3">LLM-powered central coordinator that receives disruption signals, formulates recovery strategies, and delegates tasks to sub-agents.</p>
+                <ul class="text-xs space-y-1 text-gray-500">
+                  <li>• High-level decision making</li>
+                  <li>• Contextual reasoning</li>
+                  <li>• What-if scenario simulation</li>
+                  <li>• Task delegation</li>
+                </ul>
+              </div>
+
+              <div class="bg-white p-6 rounded-lg border">
+                <h4 class="font-semibold mb-3 text-orange-600">Specialized Sub-Agents</h4>
+                <p class="text-sm text-gray-600 mb-3">Domain-specific agents for risk assessment, passenger rebooking, financial calculation, and crew management.</p>
+                <ul class="text-xs space-y-1 text-gray-500">
+                  <li>• Risk Assessment Agent</li>
+                  <li>• Rebooking Agent</li>
+                  <li>• Finance Agent</li>
+                  <li>• Crew Management Agent</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div id="diagram">
+            <h3 class="serif text-2xl font-semibold mb-6">1.3 System Architecture Diagram</h3>
+            <div class="diagram-container">
+              <div class="mermaid-container">
+                <div class="mermaid-controls">
+                  <button class="mermaid-control-btn zoom-in" title="放大">
+                    <i class="fas fa-search-plus"></i>
+                  </button>
+                  <button class="mermaid-control-btn zoom-out" title="缩小">
+                    <i class="fas fa-search-minus"></i>
+                  </button>
+                  <button class="mermaid-control-btn reset-zoom" title="重置">
+                    <i class="fas fa-expand-arrows-alt"></i>
+                  </button>
+                  <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                    <i class="fas fa-expand"></i>
+                  </button>
+                </div>
+                <div class="mermaid">
+                  graph TD
+                  subgraph &#34;External Data Sources&#34;
+                  A1[Flight Schedules &amp; Status]
+                  A2[Weather Data]
+                  A3[Air Traffic Control]
+                  A4[Airport Operations]
+                  end
+
+                  subgraph &#34;Data Ingestion &amp; Prediction&#34;
+                  B1[Real-Time Data Stream]
+                  B2[Disruption Signal Generator&lt;br/&gt;(Predictive AI Model)]
+                  end
+
+                  subgraph &#34;Core Multi-Agent System&#34;
+                  C1[Orchestrator Agent&lt;br/&gt;(LLM-Powered)]
+                  subgraph &#34;Specialized Sub-Agents&#34;
+                  D1[Risk Assessment Agent]
+                  D2[Rebooking Agent]
+                  D3[Finance Agent]
+                  D4[Crew Management Agent]
+                  end
+                  end
+
+                  subgraph &#34;Data Storage &amp; Audit&#34;
+                  E1[Operational Database&lt;br/&gt;(PostgreSQL)]
+                  E2[Immutable Audit Trail&lt;br/&gt;(Blackbox)]
+                  end
+
+                  subgraph &#34;User Interfaces&#34;
+                  F1[Operations Dashboard&lt;br/&gt;(Human-in-the-Loop)]
+                  F2[Customer Mobile App&lt;br/&gt;&amp; Voice Assistant]
+                  end
+
+                  %% Data Flow
+                  A1 &amp; A2 &amp; A3 &amp; A4 --&gt; B1
+                  B1 --&gt; B2
+                  B2 --&gt; C1
+                  C1 --&gt; D1 &amp; D2 &amp; D3 &amp; D4
+                  D1 &amp; D2 &amp; D3 &amp; D4 --&gt; C1
+                  C1 --&gt; F1
+                  F1 --&gt; C1
+                  C1 --&gt; F2
+                  C1 --&gt; E1
+                  E1 --&gt; D1 &amp; D2 &amp; D3 &amp; D4
+                  C1 --&gt; E2
+                  D1 &amp; D2 &amp; D3 &amp; D4 --&gt; E2
+
+                  %% Styling
+                  classDef dataSource fill:#f9f,stroke:#333,stroke-width:2px
+                  classDef dataLayer fill:#bbf,stroke:#333,stroke-width:2px
+                  classDef agentSystem fill:#9f9,stroke:#333,stroke-width:2px
+                  classDef storage fill:#ff9,stroke:#333,stroke-width:2px
+                  classDef interface fill:#f96,stroke:#333,stroke-width:2px
+
+                  class A1,A2,A3,A4 dataSource
+                  class B1,B2 dataLayer
+                  class C1,D1,D2,D3,D4 agentSystem
+                  class E1,E2 storage
+                  class F1,F2 interface
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Predictive System -->
+      <section class="px-8 py-12 bg-white" id="prediction">
+        <div class="max-w-6xl mx-auto">
+          <h2 class="serif text-3xl font-bold mb-8">2. Prototyping the Predictive Disruption System</h2>
+
+          <div class="mb-12" id="data-stream">
+            <h3 class="serif text-2xl font-semibold mb-6">2.1 Data Stream and Real-Time Data Sources</h3>
+
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+              <div class="bg-blue-50 p-6 rounded-lg">
+                <h4 class="font-semibold mb-3 text-blue-900">Flight Data APIs</h4>
+                <ul class="text-sm space-y-2 text-blue-800">
+                  <li>• Aviation Edge Flight Delay API <a class="citation-link" href="https://aviation-edge.com/flight-delay-api/" target="_blank">[13]</a>
+                  </li>
+                  <li>• FlightLabs real-time tracking <a class="citation-link" href="https://www.goflightlabs.com/" target="_blank">[14]</a>
+                  </li>
+                  <li>• AeroDataBox comprehensive data <a class="citation-link" href="https://aerodatabox.com/" target="_blank">[16]</a>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="bg-green-50 p-6 rounded-lg">
+                <h4 class="font-semibold mb-3 text-green-900">Weather Intelligence</h4>
+                <ul class="text-sm space-y-2 text-green-800">
+                  <li>• Tomorrow.io hyper-local forecasts</li>
+                  <li>• Severe weather alerts</li>
+                  <li>• Airport-specific conditions</li>
+                </ul>
+              </div>
+
+              <div class="bg-purple-50 p-6 rounded-lg">
+                <h4 class="font-semibold mb-3 text-purple-900">Operational Data</h4>
+                <ul class="text-sm space-y-2 text-purple-800">
+                  <li>• Air traffic congestion</li>
+                  <li>• Airport operational status</li>
+                  <li>• Crew roster information</li>
+                  <li>• Passenger service systems</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div id="signal-generator">
+            <h3 class="serif text-2xl font-semibold mb-6">2.2 Disruption Signal Generator (Predictive AI Model)</h3>
+
+            <div class="bg-gray-50 p-8 rounded-lg mb-8">
+              <h4 class="font-semibold mb-4">Model Development Pipeline</h4>
+              <div class="grid md:grid-cols-4 gap-4">
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-database text-white text-xl"></i>
+                  </div>
+                  <h5 class="font-medium mb-2">Data Collection</h5>
+                  <p class="text-sm text-gray-600">Historical flight data, weather patterns, operational records</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-cogs text-white text-xl"></i>
+                  </div>
+                  <h5 class="font-medium mb-2">Feature Engineering</h5>
+                  <p class="text-sm text-gray-600">Create predictive features from raw data</p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-brain text-white text-xl"></i>
+                  </div>
+                  <h5 class="font-medium mb-2">Model Training</h5>
+                  <p class="text-sm text-gray-600">XGBoost, LSTM networks, ensemble methods <a class="citation-link" href="https://www.sciencedirect.com/science/article/abs/pii/S0968090X24003875" target="_blank">[4]</a>
+                  </p>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-chart-line text-white text-xl"></i>
+                  </div>
+                  <h5 class="font-medium mb-2">Real-time Integration</h5>
+                  <p class="text-sm text-gray-600">Apache Kafka streaming pipeline</p>
+                </div>
+              </div>
+            </div>
+
+            <p class="mb-6">
+              The Disruption Signal Generator transforms raw data into actionable intelligence, providing the Orchestrator Agent with foresight needed to initiate proactive measures. The model&#39;s objective is to forecast flight disruptions with high accuracy and sufficient lead time, outputting probabilistic forecasts with confidence scores <a class="citation-link" href="https://repository.rit.edu/theses/12167/" target="_blank">[2]</a>.
+            </p>
+
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
+              <div class="flex">
+                <div class="flex-shrink-0">
+                  <i class="fas fa-lightbulb text-yellow-400 text-xl"></i>
+                </div>
+                <div class="ml-3">
+                  <h4 class="font-semibold text-yellow-800">Performance Benchmark</h4>
+                  <p class="text-yellow-700">LSTM models have achieved <strong>95.3% accuracy</strong> in classifying flight arrival delays within one-hour prediction windows <a class="citation-link" href="https://www.sciencedirect.com/science/article/abs/pii/S0968090X24003875" target="_blank">[4]</a>.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Agentic Structure -->
+      <section class="px-8 py-12" id="agents">
+        <div class="max-w-6xl mx-auto">
+          <h2 class="serif text-3xl font-bold mb-8">3. Designing the Agentic Structure</h2>
+
+          <div class="mb-12" id="orchestrator">
+            <h3 class="serif text-2xl font-semibold mb-6">3.1 Orchestrator Agent (Central Coordinator)</h3>
+
+            <p class="mb-6">
+              The Orchestrator Agent serves as the central command and control unit, powered by a Large Language Model to provide advanced reasoning, planning, and natural language understanding capabilities. Unlike traditional rule-based engines, the LLM-powered orchestrator can understand context, weigh multiple competing objectives, and generate creative solutions to novel problems.
+            </p>
+
+            <div class="bg-blue-50 p-6 rounded-lg mb-8">
+              <h4 class="font-semibold mb-4 text-blue-900">LLM Integration Benefits:</h4>
+              <ul class="space-y-3">
+                <li class="flex items-start">
+                  <i class="fas fa-language text-blue-500 mt-1 mr-3"></i>
+                  <div>
+                    <strong>Natural Language Understanding:</strong> Interprets unstructured data like weather reports and operational bulletins
+                  </div>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-balance-scale text-blue-500 mt-1 mr-3"></i>
+                  <div>
+                    <strong>Multi-Objective Reasoning:</strong> Balances competing goals like cost vs. customer satisfaction
+                  </div>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-lightbulb text-blue-500 mt-1 mr-3"></i>
+                  <div>
+                    <strong>Creative Problem Solving:</strong> Generates innovative solutions to complex disruption scenarios
+                  </div>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-comments text-blue-500 mt-1 mr-3"></i>
+                  <div>
+                    <strong>Human-Readable Explanations:</strong> Provides transparent decision-making rationale for human operators
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 mb-8">
+              <div>
+                <h4 class="font-semibold mb-4">Workflow Process</h4>
+                <ol class="space-y-3">
+                  <li class="flex items-start">
+                    <span class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5">1</span>
+                    <span>Receive disruption signal from predictive model</span>
+                  </li>
+                  <li class="flex items-start">
+                    <span class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5">2</span>
+                    <span>Query sub-agents for detailed analysis</span>
+                  </li>
+                  <li class="flex items-start">
+                    <span class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5">3</span>
+                    <span>Synthesize information using LLM reasoning</span>
+                  </li>
+                  <li class="flex items-start">
+                    <span class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5">4</span>
+                    <span>Formulate multi-pronged recovery strategy</span>
+                  </li>
+                  <li class="flex items-start">
+                    <span class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5">5</span>
+                    <span>Delegate execution tasks to sub-agents</span>
+                  </li>
+                  <li class="flex items-start">
+                    <span class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5">6</span>
+                    <span>Monitor progress and adapt to changes</span>
+                  </li>
+                </ol>
+              </div>
+
+              <div>
+                <h4 class="font-semibold mb-4">Decision Framework</h4>
+                <p class="text-sm text-gray-600 mb-4">The Orchestrator uses a &#34;Predictive Prescription&#34; framework <a class="citation-link" href="https://www.sciencedirect.com/science/article/abs/pii/S0968090X24003875" target="_blank">[4]</a> that integrates machine learning with operations research to generate optimal decisions under uncertainty.</p>
+
+                <div class="bg-gray-100 p-4 rounded-lg">
+                  <h5 class="font-medium mb-2">Example Decision Prompt:</h5>
+                  <p class="text-xs italic text-gray-600">
+                    &#34;Flight CX123 has 75% probability of 3-hour delay due to severe weather. Consider passenger profiles, crew availability, and financial impact. Generate optimal recovery plan balancing customer satisfaction and operational efficiency.&#34;
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="sub-agents">
+            <h3 class="serif text-2xl font-semibold mb-6">3.2 Specialized Sub-Agents</h3>
+
+            <div class="grid md:grid-cols-2 gap-8 mb-8">
+              <div class="bg-white p-6 rounded-lg border">
+                <div class="flex items-center mb-4">
+                  <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-exclamation-triangle text-red-600"></i>
+                  </div>
+                  <h4 class="font-semibold text-lg">Risk Assessment Agent</h4>
+                </div>
+                <p class="text-sm text-gray-600 mb-4">Quantifies disruption impact and likelihood, assessing duration against regulatory limits like the three-hour tarmac delay rule <a class="citation-link" href="https://arxiv.org/pdf/2510.26831" target="_blank">[173]</a>.</p>
+                <ul class="text-xs space-y-1 text-gray-500">
+                  <li>• Probability and duration estimation</li>
+                  <li>• Regulatory compliance checking</li>
+                  <li>• Cascading effect analysis</li>
+                  <li>• Risk scoring and reporting</li>
+                </ul>
+              </div>
+
+              <div class="bg-white p-6 rounded-lg border">
+                <div class="flex items-center mb-4">
+                  <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-user-friends text-blue-600"></i>
+                  </div>
+                  <h4 class="font-semibold text-lg">Rebooking Agent</h4>
+                </div>
+                <p class="text-sm text-gray-600 mb-4">Manages passenger re-accommodation with personalized options based on customer profiles, preferences, and loyalty status.</p>
+                <ul class="text-xs space-y-1 text-gray-500">
+                  <li>• Alternative flight optimization</li>
+                  <li>• Customer profile integration</li>
+                  <li>• Hotel and service booking</li>
+                  <li>• Empathetic communication <a class="citation-link" href="https://medium.com/thedeephub/deepseek-enhanced-recoverai-a-multiagent-ai-system-for-optimizing-airline-operations-839da8b493d4" target="_blank">[135]</a>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="bg-white p-6 rounded-lg border">
+                <div class="flex items-center mb-4">
+                  <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-calculator text-green-600"></i>
+                  </div>
+                  <h4 class="font-semibold text-lg">Finance Agent</h4>
+                </div>
+                <p class="text-sm text-gray-600 mb-4">Calculates total economic impact including rebooking costs, passenger compensation, crew overtime, and lost revenue.</p>
+                <ul class="text-xs space-y-1 text-gray-500">
+                  <li>• Real-time cost-benefit analysis</li>
+                  <li>• EU261 compensation calculation</li>
+                  <li>• Ancillary service costs</li>
+                  <li>• Brand impact assessment</li>
+                </ul>
+              </div>
+
+              <div class="bg-white p-6 rounded-lg border">
+                <div class="flex items-center mb-4">
+                  <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-users-cog text-purple-600"></i>
+                  </div>
+                  <h4 class="font-semibold text-lg">Crew Management Agent</h4>
+                </div>
+                <p class="text-sm text-gray-600 mb-4">Manages crew rotations and ensures compliance with staff regulations, duty time limitations, and rest requirements.</p>
+                <ul class="text-xs space-y-1 text-gray-500">
+                  <li>• Automated compliance checking</li>
+                  <li>• Reserve crew optimization</li>
+                  <li>• Duty time violation prevention</li>
+                  <li>• Regulatory reporting</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Implementation Plan -->
+      <section class="px-8 py-12 bg-white" id="implementation">
+        <div class="max-w-6xl mx-auto">
+          <h2 class="serif text-3xl font-bold mb-8">4. Implementation Plan and Technology Stack</h2>
+
+          <div class="mb-12" id="phases">
+            <h3 class="serif text-2xl font-semibold mb-8">4.1 Development Phases</h3>
+
+            <div class="space-y-8">
+              <div class="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-500">
+                <h4 class="font-semibold text-xl mb-4 text-blue-900">Phase 1: Core Infrastructure (Month 1-2)</h4>
+                <div class="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h5 class="font-medium mb-3">Data Pipeline Setup</h5>
+                    <ul class="text-sm space-y-1 text-blue-800">
+                      <li>• Apache Kafka real-time streaming</li>
+                      <li>• PostgreSQL operational database</li>
+                      <li>• Basic immutable audit trail</li>
+                      <li>• API integrations for data sources</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h5 class="font-medium mb-3">Agent Framework</h5>
+                    <ul class="text-sm space-y-1 text-blue-800">
+                      <li>• LangChain LLM orchestrator</li>
+                      <li>• Basic sub-agent prototypes</li>
+                      <li>• REST API communication</li>
+                      <li>• Docker containerization</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-green-50 p-6 rounded-lg border-l-4 border-green-500">
+                <h4 class="font-semibold text-xl mb-4 text-green-900">Phase 2: Predictive Capabilities (Month 3-4)</h4>
+                <div class="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h5 class="font-medium mb-3">Model Development</h5>
+                    <ul class="text-sm space-y-1 text-green-800">
+                      <li>• Historical data collection</li>
+                      <li>• Feature engineering pipeline</li>
+                      <li>• XGBoost/LSTM model training</li>
+                      <li>• Real-time integration testing</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h5 class="font-medium mb-3">Agent Enhancement</h5>
+                    <ul class="text-sm space-y-1 text-green-800">
+                      <li>• Advanced orchestrator logic</li>
+                      <li>• Sub-agent specialization</li>
+                      <li>• System integration testing</li>
+                      <li>• Performance optimization</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-purple-50 p-6 rounded-lg border-l-4 border-purple-500">
+                <h4 class="font-semibold text-xl mb-4 text-purple-900">Phase 3: User Interfaces (Month 5-6)</h4>
+                <div class="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h5 class="font-medium mb-3">Operations Dashboard</h5>
+                    <ul class="text-sm space-y-1 text-purple-800">
+                      <li>• React.js web application</li>
+                      <li>• Real-time visualization</li>
+                      <li>• What-if scenario planning</li>
+                      <li>• Human approval workflows</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h5 class="font-medium mb-3">Customer Experience</h5>
+                    <ul class="text-sm space-y-1 text-purple-800">
+                      <li>• React Native mobile app</li>
+                      <li>• Voice-assisted chat agent</li>
+                      <li>• Push notification system</li>
+                      <li>• Immutable audit trail UI</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="tech-stack">
+            <h3 class="serif text-2xl font-semibold mb-6">4.2 Recommended Technology Stack</h3>
+
+            <div class="overflow-x-auto">
+              <table class="w-full bg-white rounded-lg border">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Component</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Technology</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rationale</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Backend &amp; API</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Python (FastAPI)</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">High-performance, async support, easy to use</td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Database</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">PostgreSQL (via Supabase)</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">Powerful, open-source, managed service available</td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">LLM Framework</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">LangChain</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">Popular framework for LLM application development</td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">LLM API</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">OpenAI API (GPT-4)</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">State-of-the-art reasoning capabilities</td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Predictive Modeling</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Scikit-learn / XGBoost</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">Versatile ML libraries with proven performance</td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Data Streaming</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Apache Kafka</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">Scalable, fault-tolerant streaming platform</td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Frontend (Dashboard)</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">React</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">Powerful library for complex UIs</td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Frontend (Mobile)</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">React Native</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">Cross-platform mobile development</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Case Studies -->
+      <section class="px-8 py-12" id="case-studies">
+        <div class="max-w-6xl mx-auto">
+          <h2 class="serif text-3xl font-bold mb-8">5. Case Studies and Best Practices</h2>
+
+          <div class="mb-12" id="recoverai">
+            <h3 class="serif text-2xl font-semibold mb-6">5.1 Inspiration from RecoverAI</h3>
+
+            <div class="bg-white p-8 rounded-lg border mb-8">
+              <div class="flex items-start mb-6">
+                <img alt="AI agent architecture diagram for airline operations" class="w-16 h-16 rounded-lg mr-4" src="https://kimi-web-img.moonshot.cn/imagegen/20251108/021762595901079455ee5296c5945e04846a6bec731cf194e33c0_0.jpeg" size="small" aspect="square" query="AI agent system airline operations" referrerpolicy="no-referrer" data-modified="1" data-score="0.00"/>
+                <div>
+                  <h4 class="font-semibold text-xl">RecoverAI Multi-Agent System</h4>
+                  <p class="text-gray-600">A proof-of-concept system demonstrating the efficacy of collaborative agent networks in disruption management</p>
+                </div>
+              </div>
+
+              <p class="mb-6">
+                The proposed system draws significant inspiration from RecoverAI, a proof-of-concept multi-agent AI system designed to automate and optimize airline operations during disruptions <a class="citation-link" href="https://medium.com/thedeephub/deepseek-enhanced-recoverai-a-multiagent-ai-system-for-optimizing-airline-operations-839da8b493d4" target="_blank">[56]</a>. RecoverAI&#39;s architecture provides a foundational blueprint for a modular, scalable, and intelligent solution that replaces monolithic, manual processes with dynamic, automated workflows.
+              </p>
+
+              <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                  <h5 class="font-semibold mb-2 text-blue-900">AI_Agent (Orchestrator)</h5>
+                  <p class="text-sm text-blue-800">Central coordinator that initiates workflows, identifies affected passengers, and delegates tasks to specialized agents <a class="citation-link" href="https://medium.com/thedeephub/an-ai-agentic-solution-for-flight-disruption-management-recoverai-code-tutorial-d98524f815f3" target="_blank">[57]</a>.</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg">
+                  <h5 class="font-semibold mb-2 text-green-900">ResourceManagementAgent</h5>
+                  <p class="text-sm text-green-800">Performs complex optimization for alternative flight assignments considering aircraft, crew, and connections.</p>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-lg">
+                  <h5 class="font-semibold mb-2 text-purple-900">CustomerSupportAgent</h5>
+                  <p class="text-sm text-purple-800">Uses LLM to generate personalized, empathetic passenger communications and rebooking notifications.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-6 mb-8">
+              <h4 class="font-semibold text-yellow-800 mb-2">Key Innovation: LLM-Powered Communication</h4>
+              <p class="text-yellow-700">
+                RecoverAI utilizes an open-source LLM (DeepSeek-r1:7b) managed with Ollama to transform complex operational data into clear, compassionate messages for passengers. This automated yet personalized communication reduces customer service workload while maintaining high satisfaction levels <a class="citation-link" href="https://medium.com/thedeephub/an-ai-agentic-solution-for-flight-disruption-management-recoverai-code-tutorial-d98524f815f3" target="_blank">[63]</a>.
+              </p>
+            </div>
+          </div>
+
+          <div id="cathay">
+            <h3 class="serif text-2xl font-semibold mb-6">5.2 Cathay Pacific&#39;s AI Initiatives</h3>
+
+            <div class="bg-white p-8 rounded-lg border mb-8">
+              <div class="flex items-start mb-6">
+                <img alt="Cathay Pacific airline operations center" class="w-16 h-16 rounded-lg mr-4" src="https://kimi-web-img.moonshot.cn/img/assets.bizclikmedia.net/224fbb5beea6a789e3f9a1d7fc3237cf96ae2a6e.webp" size="small" aspect="square" style="photo" query="Cathay Pacific operations center" referrerpolicy="no-referrer" data-modified="1" data-score="0.00"/>
+                <div>
+                  <h4 class="font-semibold text-xl">Pathfinder &amp; Sentry Systems</h4>
+                  <p class="text-gray-600">BCG and KLM collaboration saving millions in disruption costs <a class="citation-link" href="https://www.bcg.com/x/mark-your-moment/transforming-airline-operations-with-ai" target="_blank">[74]</a>
+                  </p>
+                </div>
+              </div>
+
+              <p class="mb-6">
+                Cathay Pacific has been at the forefront of leveraging artificial intelligence to transform airline operations, providing a real-world benchmark for the proposed disruption management system. In collaboration with Boston Consulting Group and KLM Royal Dutch Airlines, Cathay developed two cutting-edge AI solutions that have saved millions in disruption costs while improving punctuality and customer satisfaction.
+              </p>
+
+              <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-blue-50 p-6 rounded-lg">
+                  <h5 class="font-semibold mb-3 text-blue-900">Pathfinder: Strategic Optimization</h5>
+                  <ul class="text-sm space-y-2 text-blue-800">
+                    <li>• ML-based delay prediction model</li>
+                    <li>• Optimized aircraft tail allocation</li>
+                    <li>• Proactive schedule buffering</li>
+                    <li>• Strategic reserve flight placement</li>
+                  </ul>
+                </div>
+                <div class="bg-green-50 p-6 rounded-lg">
+                  <h5 class="font-semibold mb-3 text-green-900">Sentry: Tactical Resolution</h5>
+                  <ul class="text-sm space-y-2 text-green-800">
+                    <li>• Real-time operational problem solving</li>
+                    <li>• Dynamic disruption response</li>
+                    <li>• Cascading effect analysis</li>
+                    <li>• Optimized recovery scenarios</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-8 rounded-lg">
+              <h4 class="font-semibold text-xl mb-4">Operations Decision Model (ODM)</h4>
+              <p class="mb-6">
+                The foundation of Cathay&#39;s AI strategy is the Operations Decision Model, a sophisticated logic layer that evaluates the total cost of all possible operational decisions in real-time. The ODM integrates considerations that were previously managed in silos:
+              </p>
+
+              <div class="grid md:grid-cols-4 gap-4">
+                <div class="text-center">
+                  <i class="fas fa-users text-2xl text-blue-500 mb-2"></i>
+                  <h6 class="font-medium">Customer Connections</h6>
+                  <p class="text-xs text-gray-600">Missed connection risks and rebooking costs</p>
+                </div>
+                <div class="text-center">
+                  <i class="fas fa-box text-2xl text-green-500 mb-2"></i>
+                  <h6 class="font-medium">Cargo Sensitivity</h6>
+                  <p class="text-xs text-gray-600">Value and time-sensitivity of cargo shipments</p>
+                </div>
+                <div class="text-center">
+                  <i class="fas fa-users-cog text-2xl text-purple-500 mb-2"></i>
+                  <h6 class="font-medium">Crew Logistics</h6>
+                  <p class="text-xs text-gray-600">Overtime costs and duty time limitations</p>
+                </div>
+                <div class="text-center">
+                  <i class="fas fa-leaf text-2xl text-orange-500 mb-2"></i>
+                  <h6 class="font-medium">Environmental Impact</h6>
+                  <p class="text-xs text-gray-600">Carbon footprint and fuel efficiency</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="px-8 py-12 bg-gray-900 text-white">
+        <div class="max-w-6xl mx-auto">
+          <div class="grid md:grid-cols-3 gap-8">
+            <div>
+              <h3 class="serif text-xl font-semibold mb-4">Key Takeaways</h3>
+              <ul class="space-y-2 text-sm text-gray-300">
+                <li>• Multi-agent architecture enables scalable disruption management</li>
+                <li>• LLM-powered orchestration provides intelligent decision-making</li>
+                <li>• Predictive analytics enables proactive response strategies</li>
+                <li>• Human-in-the-loop ensures operational oversight and control</li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="serif text-xl font-semibold mb-4">Implementation Timeline</h3>
+              <ul class="space-y-2 text-sm text-gray-300">
+                <li>• Phase 1: Infrastructure (2 months)</li>
+                <li>• Phase 2: Prediction (2 months)</li>
+                <li>• Phase 3: Interfaces (2 months)</li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="serif text-xl font-semibold mb-4">Expected Impact</h3>
+              <ul class="space-y-2 text-sm text-gray-300">
+                <li>• Reduced disruption recovery time</li>
+                <li>• Improved passenger satisfaction</li>
+                <li>• Significant cost savings</li>
+                <li>• Enhanced operational efficiency</li>
+              </ul>
+            </div>
+          </div>
+          <div class="border-t border-gray-700 mt-8 pt-8 text-center">
+            <p class="text-sm text-gray-400">
+              2025 Flight Disruption Management System Architecture. Designed for the Cathay Pacific Hackathon.
+            </p>
+          </div>
+        </div>
+      </footer>
+    </main>
+
+    <script>
+        // Initialize Mermaid with better styling
+        mermaid.initialize({ 
+            startOnLoad: true, 
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#f8fafc',
+                primaryTextColor: '#1e293b',
+                primaryBorderColor: '#374151',
+                lineColor: '#6b7280',
+                secondaryColor: '#e5e7eb',
+                tertiaryColor: '#f3f4f6'
+            }
+        });
+        
+        // Initialize Mermaid Controls for zoom and pan
+        function initializeMermaidControls() {
+            const containers = document.querySelectorAll('.mermaid-container');
+
+            containers.forEach(container => {
+            const mermaidElement = container.querySelector('.mermaid');
+            let scale = 1;
+            let isDragging = false;
+            let startX, startY, translateX = 0, translateY = 0;
+
+            // 触摸相关状态
+            let isTouch = false;
+            let touchStartTime = 0;
+            let initialDistance = 0;
+            let initialScale = 1;
+            let isPinching = false;
+
+            // Zoom controls
+            const zoomInBtn = container.querySelector('.zoom-in');
+            const zoomOutBtn = container.querySelector('.zoom-out');
+            const resetBtn = container.querySelector('.reset-zoom');
+            const fullscreenBtn = container.querySelector('.fullscreen');
+
+            function updateTransform() {
+                mermaidElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+
+                if (scale > 1) {
+                container.classList.add('zoomed');
+                } else {
+                container.classList.remove('zoomed');
+                }
+
+                mermaidElement.style.cursor = isDragging ? 'grabbing' : 'grab';
+            }
+
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('click', () => {
+                scale = Math.min(scale * 1.25, 4);
+                updateTransform();
+                });
+            }
+
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('click', () => {
+                scale = Math.max(scale / 1.25, 0.3);
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+                updateTransform();
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+                });
+            }
+
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', () => {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
+                }
+                });
+            }
+
+            // Mouse Events
+            mermaidElement.addEventListener('mousedown', (e) => {
+                if (isTouch) return; // 如果是触摸设备，忽略鼠标事件
+
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+                mermaidElement.style.cursor = 'grabbing';
+                updateTransform();
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging && !isTouch) {
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseleave', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            // 获取两点之间的距离
+            function getTouchDistance(touch1, touch2) {
+                return Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+                );
+            }
+
+            // Touch Events - 触摸事件处理
+            mermaidElement.addEventListener('touchstart', (e) => {
+                isTouch = true;
+                touchStartTime = Date.now();
+
+                if (e.touches.length === 1) {
+                // 单指拖动
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+
+                } else if (e.touches.length === 2) {
+                // 双指缩放
+                isPinching = true;
+                isDragging = false;
+
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                initialDistance = getTouchDistance(touch1, touch2);
+                initialScale = scale;
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1 && isDragging && !isPinching) {
+                // 单指拖动
+                const touch = e.touches[0];
+                translateX = touch.clientX - startX;
+                translateY = touch.clientY - startY;
+                updateTransform();
+
+                } else if (e.touches.length === 2 && isPinching) {
+                // 双指缩放
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const currentDistance = getTouchDistance(touch1, touch2);
+
+                if (initialDistance > 0) {
+                    const newScale = Math.min(Math.max(
+                    initialScale * (currentDistance / initialDistance),
+                    0.3
+                    ), 4);
+                    scale = newScale;
+                    updateTransform();
+                }
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchend', (e) => {
+                // 重置状态
+                if (e.touches.length === 0) {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                // 延迟重置isTouch，避免鼠标事件立即触发
+                setTimeout(() => {
+                    isTouch = false;
+                }, 100);
+                } else if (e.touches.length === 1 && isPinching) {
+                // 从双指变为单指，切换为拖动模式
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+                }
+
+                updateTransform();
+            });
+
+            mermaidElement.addEventListener('touchcancel', (e) => {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                setTimeout(() => {
+                isTouch = false;
+                }, 100);
+
+                updateTransform();
+            });
+
+            // Enhanced wheel zoom with better center point handling
+            container.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const rect = container.getBoundingClientRect();
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                const newScale = Math.min(Math.max(scale * delta, 0.3), 4);
+
+                // Adjust translation to zoom towards center
+                if (newScale !== scale) {
+                const scaleDiff = newScale / scale;
+                translateX = translateX * scaleDiff;
+                translateY = translateY * scaleDiff;
+                scale = newScale;
+
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+
+                updateTransform();
+                }
+            });
+
+            // Initialize display
+            updateTransform();
+            });
+        }
+
+        // Initialize the mermaid controls
+        initializeMermaidControls();
+        
+        // Mobile TOC toggle
+        function toggleTOC() {
+            const toc = document.querySelector('.toc-fixed');
+            toc.classList.toggle('open');
+        }
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        // Close mobile TOC when clicking outside
+        document.addEventListener('click', function(e) {
+            const toc = document.querySelector('.toc-fixed');
+            const toggleBtn = document.querySelector('button[onclick="toggleTOC()"]');
+            
+            if (window.innerWidth <= 1024 && 
+                !toc.contains(e.target) && 
+                !toggleBtn.contains(e.target) && 
+                toc.classList.contains('open')) {
+                toc.classList.remove('open');
+            }
+        });
+    </script>
+
+  
+
+</body>
+</html>

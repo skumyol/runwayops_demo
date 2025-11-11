@@ -1,0 +1,548 @@
+[
+  {
+    "disruptionId": "DIS-20251111-CX255",
+    "flightNumber": "CX255",
+    "flightDate": "2025-11-11",
+    "scheduledDeparture": "2025-11-11T10:28:10.354120+00:00",
+    "scheduledArrival": "2025-11-11T23:28:10.354120+00:00",
+    "type": "WEATHER",
+    "rootCause": "Weather en-route",
+    "status": "PREDICTED",
+    "impact": {
+      "delayMinutes": 20,
+      "newDeparture": "2025-11-11T10:48:10.354120+00:00",
+      "cancelled": false
+    },
+    "passengerImpact": {
+      "totalPax": 262,
+      "connectingPax": 53,
+      "highValuePax": 28,
+      "protectedPax": 48
+    },
+    "crewImpact": {
+      "requiredCrew": 15,
+      "unavailableCrew": [],
+      "standbyCrewAvailable": 4
+    },
+    "costEstimate": {
+      "compensationEUR261": 28537,
+      "hotelNights": 5,
+      "mealVouchers": 262,
+      "rebookingCost": 47359,
+      "totalUSD": 50762
+    },
+    "actionPlan": {
+      "rebookedFlight": "CX900",
+      "hotelBookingId": "HTL-24308",
+      "crewSwap": [],
+      "approvedBy": "OPS-001",
+      "approvedAt": "2025-11-11T08:03:10.440808+00:00",
+      "confidence": 0.84,
+      "aircraftSwapCandidate": "B-LXAF"
+    }
+  },
+  {
+    "disruptionId": "DIS-20251111-CX520",
+    "flightNumber": "CX520",
+    "flightDate": "2025-11-11",
+    "scheduledDeparture": "2025-11-11T11:07:10.440935+00:00",
+    "scheduledArrival": "2025-11-11T15:12:10.440935+00:00",
+    "type": "DELAY",
+    "rootCause": "Maintenance release hold",
+    "status": "PREDICTED",
+    "impact": {
+      "delayMinutes": 99,
+      "newDeparture": "2025-11-11T12:46:10.440935+00:00",
+      "cancelled": false
+    },
+    "passengerImpact": {
+      "totalPax": 245,
+      "connectingPax": 67,
+      "highValuePax": 12,
+      "protectedPax": 28
+    },
+    "crewImpact": {
+      "requiredCrew": 15,
+      "unavailableCrew": [],
+      "standbyCrewAvailable": 3
+    },
+    "costEstimate": {
+      "compensationEUR261": 8578,
+      "hotelNights": 11,
+      "mealVouchers": 245,
+      "rebookingCost": 28642,
+      "totalUSD": 44370
+    },
+    "actionPlan": {
+      "rebookedFlight": "CX900",
+      "hotelBookingId": "HTL-20599",
+      "crewSwap": [],
+      "approvedBy": "OPS-003",
+      "approvedAt": "2025-11-11T08:03:10.521687+00:00",
+      "confidence": 0.95,
+      "aircraftSwapCandidate": null
+    }
+  },
+  {
+    "disruptionId": "DIS-20251111-CX903",
+    "flightNumber": "CX903",
+    "flightDate": "2025-11-11",
+    "scheduledDeparture": "2025-11-11T10:21:10.521810+00:00",
+    "scheduledArrival": "2025-11-11T12:41:10.521810+00:00",
+    "type": "CREW",
+    "rootCause": "Ground handling delay",
+    "status": "PREDICTED",
+    "impact": {
+      "delayMinutes": 56,
+      "newDeparture": "2025-11-11T11:17:10.521810+00:00",
+      "cancelled": false
+    },
+    "passengerImpact": {
+      "totalPax": 135,
+      "connectingPax": 35,
+      "highValuePax": 14,
+      "protectedPax": 14
+    },
+    "crewImpact": {
+      "requiredCrew": 9,
+      "unavailableCrew": [
+        "CX120034"
+      ],
+      "standbyCrewAvailable": 3
+    },
+    "costEstimate": {
+      "compensationEUR261": 10512,
+      "hotelNights": 14,
+      "mealVouchers": 135,
+      "rebookingCost": 25607,
+      "totalUSD": 65265
+    },
+    "actionPlan": {
+      "rebookedFlight": "CX900",
+      "hotelBookingId": "HTL-53940",
+      "crewSwap": [
+        "CX120034"
+      ],
+      "approvedBy": "OPS-001",
+      "approvedAt": "2025-11-11T08:03:10.566924+00:00",
+      "confidence": 0.84,
+      "aircraftSwapCandidate": null
+    }
+  },
+  {
+    "disruptionId": "DIS-20251111-CX865",
+    "flightNumber": "CX865",
+    "flightDate": "2025-11-11",
+    "scheduledDeparture": "2025-11-11T09:59:10.567033+00:00",
+    "scheduledArrival": "2025-11-11T21:59:10.567033+00:00",
+    "type": "CREW",
+    "rootCause": "Ground handling delay",
+    "status": "PREDICTED",
+    "impact": {
+      "delayMinutes": 140,
+      "newDeparture": "2025-11-11T12:19:10.567033+00:00",
+      "cancelled": false
+    },
+    "passengerImpact": {
+      "totalPax": 308,
+      "connectingPax": 67,
+      "highValuePax": 31,
+      "protectedPax": 35
+    },
+    "crewImpact": {
+      "requiredCrew": 15,
+      "unavailableCrew": [],
+      "standbyCrewAvailable": 1
+    },
+    "costEstimate": {
+      "compensationEUR261": 13118,
+      "hotelNights": 45,
+      "mealVouchers": 308,
+      "rebookingCost": 35806,
+      "totalUSD": 92053
+    },
+    "actionPlan": {
+      "rebookedFlight": "CX251",
+      "hotelBookingId": "HTL-16991",
+      "crewSwap": [],
+      "approvedBy": "OPS-002",
+      "approvedAt": "2025-11-11T08:03:10.680168+00:00",
+      "confidence": 0.95,
+      "aircraftSwapCandidate": null
+    }
+  },
+  {
+    "disruptionId": "DIS-20251111-CX315",
+    "flightNumber": "CX315",
+    "flightDate": "2025-11-11",
+    "scheduledDeparture": "2025-11-11T10:20:10.680259+00:00",
+    "scheduledArrival": "2025-11-11T22:40:10.680259+00:00",
+    "type": "CREW",
+    "rootCause": "ATC slot restriction",
+    "status": "PREDICTED",
+    "impact": {
+      "delayMinutes": 114,
+      "newDeparture": "2025-11-11T12:14:10.680259+00:00",
+      "cancelled": false
+    },
+    "passengerImpact": {
+      "totalPax": 230,
+      "connectingPax": 76,
+      "highValuePax": 11,
+      "protectedPax": 42
+    },
+    "crewImpact": {
+      "requiredCrew": 15,
+      "unavailableCrew": [
+        "CX120062",
+        "CX120054",
+        "CX120061"
+      ],
+      "standbyCrewAvailable": 1
+    },
+    "costEstimate": {
+      "compensationEUR261": 25771,
+      "hotelNights": 27,
+      "mealVouchers": 230,
+      "rebookingCost": 44082,
+      "totalUSD": 91975
+    },
+    "actionPlan": {
+      "rebookedFlight": "CX882",
+      "hotelBookingId": "HTL-18741",
+      "crewSwap": [
+        "CX120062",
+        "CX120054",
+        "CX120061"
+      ],
+      "approvedBy": "OPS-001",
+      "approvedAt": "2025-11-11T08:03:10.756679+00:00",
+      "confidence": 0.7,
+      "aircraftSwapCandidate": null
+    }
+  },
+  {
+    "disruptionId": "DIS-20251111-CX872",
+    "flightNumber": "CX872",
+    "flightDate": "2025-11-11",
+    "scheduledDeparture": "2025-11-11T09:20:10.756777+00:00",
+    "scheduledArrival": "2025-11-11T22:00:10.756777+00:00",
+    "type": "WEATHER",
+    "rootCause": "Ground handling delay",
+    "status": "ACTIVE",
+    "impact": {
+      "delayMinutes": 167,
+      "newDeparture": "2025-11-11T12:07:10.756777+00:00",
+      "cancelled": false
+    },
+    "passengerImpact": {
+      "totalPax": 249,
+      "connectingPax": 69,
+      "highValuePax": 26,
+      "protectedPax": 31
+    },
+    "crewImpact": {
+      "requiredCrew": 15,
+      "unavailableCrew": [
+        "CX120069",
+        "CX120078"
+      ],
+      "standbyCrewAvailable": 3
+    },
+    "costEstimate": {
+      "compensationEUR261": 19827,
+      "hotelNights": 3,
+      "mealVouchers": 249,
+      "rebookingCost": 28499,
+      "totalUSD": 49490
+    },
+    "actionPlan": {
+      "rebookedFlight": "CX900",
+      "hotelBookingId": "HTL-48920",
+      "crewSwap": [
+        "CX120069",
+        "CX120078"
+      ],
+      "approvedBy": "OPS-002",
+      "approvedAt": "2025-11-11T08:03:10.839709+00:00",
+      "confidence": 0.97,
+      "aircraftSwapCandidate": null
+    }
+  },
+  {
+    "disruptionId": "DIS-20251111-CX708",
+    "flightNumber": "CX708",
+    "flightDate": "2025-11-11",
+    "scheduledDeparture": "2025-11-11T09:06:10.839803+00:00",
+    "scheduledArrival": "2025-11-11T12:36:10.839803+00:00",
+    "type": "CREW",
+    "rootCause": "Maintenance release hold",
+    "status": "ACTIVE",
+    "impact": {
+      "delayMinutes": 132,
+      "newDeparture": "2025-11-11T11:18:10.839803+00:00",
+      "cancelled": false
+    },
+    "passengerImpact": {
+      "totalPax": 167,
+      "connectingPax": 57,
+      "highValuePax": 18,
+      "protectedPax": 25
+    },
+    "crewImpact": {
+      "requiredCrew": 12,
+      "unavailableCrew": [
+        "CX120093",
+        "CX120085"
+      ],
+      "standbyCrewAvailable": 0
+    },
+    "costEstimate": {
+      "compensationEUR261": 8702,
+      "hotelNights": 35,
+      "mealVouchers": 167,
+      "rebookingCost": 41807,
+      "totalUSD": 31608
+    },
+    "actionPlan": {
+      "rebookedFlight": "CX251",
+      "hotelBookingId": "HTL-96810",
+      "crewSwap": [
+        "CX120093",
+        "CX120085"
+      ],
+      "approvedBy": "OPS-003",
+      "approvedAt": "2025-11-11T08:03:10.894380+00:00",
+      "confidence": 0.94,
+      "aircraftSwapCandidate": null
+    }
+  },
+  {
+    "disruptionId": "DIS-20251111-CX255",
+    "flightNumber": "CX255",
+    "flightDate": "2025-11-11",
+    "scheduledDeparture": "2025-11-11T08:47:10.894467+00:00",
+    "scheduledArrival": "2025-11-11T21:47:10.894467+00:00",
+    "type": "ATC",
+    "rootCause": "ATC slot restriction",
+    "status": "ACTIVE",
+    "impact": {
+      "delayMinutes": 75,
+      "newDeparture": "2025-11-11T10:02:10.894467+00:00",
+      "cancelled": false
+    },
+    "passengerImpact": {
+      "totalPax": 229,
+      "connectingPax": 69,
+      "highValuePax": 11,
+      "protectedPax": 34
+    },
+    "crewImpact": {
+      "requiredCrew": 15,
+      "unavailableCrew": [
+        "CX120100"
+      ],
+      "standbyCrewAvailable": 4
+    },
+    "costEstimate": {
+      "compensationEUR261": 10912,
+      "hotelNights": 59,
+      "mealVouchers": 229,
+      "rebookingCost": 41908,
+      "totalUSD": 104378
+    },
+    "actionPlan": {
+      "rebookedFlight": "CX900",
+      "hotelBookingId": "HTL-68800",
+      "crewSwap": [
+        "CX120100"
+      ],
+      "approvedBy": "OPS-002",
+      "approvedAt": "2025-11-11T08:03:10.971295+00:00",
+      "confidence": 0.91,
+      "aircraftSwapCandidate": null
+    }
+  },
+  {
+    "disruptionId": "DIS-20251111-CX520",
+    "flightNumber": "CX520",
+    "flightDate": "2025-11-11",
+    "scheduledDeparture": "2025-11-11T09:07:10.971385+00:00",
+    "scheduledArrival": "2025-11-11T13:12:10.971385+00:00",
+    "type": "WEATHER",
+    "rootCause": "Ground handling delay",
+    "status": "ACTIVE",
+    "impact": {
+      "delayMinutes": 105,
+      "newDeparture": "2025-11-11T10:52:10.971385+00:00",
+      "cancelled": false
+    },
+    "passengerImpact": {
+      "totalPax": 241,
+      "connectingPax": 65,
+      "highValuePax": 19,
+      "protectedPax": 36
+    },
+    "crewImpact": {
+      "requiredCrew": 15,
+      "unavailableCrew": [
+        "CX120120",
+        "CX120112"
+      ],
+      "standbyCrewAvailable": 4
+    },
+    "costEstimate": {
+      "compensationEUR261": 10522,
+      "hotelNights": 14,
+      "mealVouchers": 241,
+      "rebookingCost": 17370,
+      "totalUSD": 77821
+    },
+    "actionPlan": {
+      "rebookedFlight": "CX882",
+      "hotelBookingId": "HTL-89013",
+      "crewSwap": [
+        "CX120120",
+        "CX120112"
+      ],
+      "approvedBy": "OPS-002",
+      "approvedAt": "2025-11-11T08:03:11.053972+00:00",
+      "confidence": 0.74,
+      "aircraftSwapCandidate": "B-LRAJ"
+    }
+  },
+  {
+    "disruptionId": "DIS-20251111-CX903",
+    "flightNumber": "CX903",
+    "flightDate": "2025-11-11",
+    "scheduledDeparture": "2025-11-11T08:58:11.054071+00:00",
+    "scheduledArrival": "2025-11-11T11:18:11.054071+00:00",
+    "type": "DELAY",
+    "rootCause": "Crew legality",
+    "status": "ACTIVE",
+    "impact": {
+      "delayMinutes": 99,
+      "newDeparture": "2025-11-11T10:37:11.054071+00:00",
+      "cancelled": false
+    },
+    "passengerImpact": {
+      "totalPax": 188,
+      "connectingPax": 72,
+      "highValuePax": 15,
+      "protectedPax": 31
+    },
+    "crewImpact": {
+      "requiredCrew": 9,
+      "unavailableCrew": [],
+      "standbyCrewAvailable": 2
+    },
+    "costEstimate": {
+      "compensationEUR261": 13962,
+      "hotelNights": 47,
+      "mealVouchers": 188,
+      "rebookingCost": 48423,
+      "totalUSD": 95660
+    },
+    "actionPlan": {
+      "rebookedFlight": "CX900",
+      "hotelBookingId": "HTL-82727",
+      "crewSwap": [],
+      "approvedBy": "OPS-002",
+      "approvedAt": "2025-11-11T08:03:11.117099+00:00",
+      "confidence": 0.76,
+      "aircraftSwapCandidate": null
+    }
+  },
+  {
+    "disruptionId": "DIS-20251111-CX865",
+    "flightNumber": "CX865",
+    "flightDate": "2025-11-11",
+    "scheduledDeparture": "2025-11-11T09:10:11.117186+00:00",
+    "scheduledArrival": "2025-11-11T21:10:11.117186+00:00",
+    "type": "ATC",
+    "rootCause": "ATC slot restriction",
+    "status": "PREDICTED",
+    "impact": {
+      "delayMinutes": 100,
+      "newDeparture": "2025-11-11T10:50:11.117186+00:00",
+      "cancelled": false
+    },
+    "passengerImpact": {
+      "totalPax": 228,
+      "connectingPax": 46,
+      "highValuePax": 13,
+      "protectedPax": 43
+    },
+    "crewImpact": {
+      "requiredCrew": 15,
+      "unavailableCrew": [
+        "CX120139",
+        "CX120136",
+        "CX120137"
+      ],
+      "standbyCrewAvailable": 5
+    },
+    "costEstimate": {
+      "compensationEUR261": 29033,
+      "hotelNights": 56,
+      "mealVouchers": 228,
+      "rebookingCost": 25464,
+      "totalUSD": 64892
+    },
+    "actionPlan": {
+      "rebookedFlight": "CX251",
+      "hotelBookingId": "HTL-77233",
+      "crewSwap": [
+        "CX120139",
+        "CX120136",
+        "CX120137"
+      ],
+      "approvedBy": "OPS-002",
+      "approvedAt": "2025-11-11T08:03:11.194695+00:00",
+      "confidence": 0.72,
+      "aircraftSwapCandidate": null
+    }
+  },
+  {
+    "disruptionId": "DIS-20251111-CX315",
+    "flightNumber": "CX315",
+    "flightDate": "2025-11-11",
+    "scheduledDeparture": "2025-11-11T11:13:11.194797+00:00",
+    "scheduledArrival": "2025-11-11T23:33:11.194797+00:00",
+    "type": "CREW",
+    "rootCause": "ATC slot restriction",
+    "status": "ACTIVE",
+    "impact": {
+      "delayMinutes": 59,
+      "newDeparture": "2025-11-11T12:12:11.194797+00:00",
+      "cancelled": false
+    },
+    "passengerImpact": {
+      "totalPax": 295,
+      "connectingPax": 100,
+      "highValuePax": 29,
+      "protectedPax": 49
+    },
+    "crewImpact": {
+      "requiredCrew": 15,
+      "unavailableCrew": [],
+      "standbyCrewAvailable": 1
+    },
+    "costEstimate": {
+      "compensationEUR261": 24792,
+      "hotelNights": 89,
+      "mealVouchers": 295,
+      "rebookingCost": 26792,
+      "totalUSD": 64612
+    },
+    "actionPlan": {
+      "rebookedFlight": "CX882",
+      "hotelBookingId": "HTL-99009",
+      "crewSwap": [],
+      "approvedBy": "OPS-001",
+      "approvedAt": "2025-11-11T08:03:11.292768+00:00",
+      "confidence": 0.92,
+      "aircraftSwapCandidate": "B-LRAA"
+    }
+  }
+]

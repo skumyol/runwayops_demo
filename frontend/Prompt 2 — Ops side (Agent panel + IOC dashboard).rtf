@@ -1,0 +1,71 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2865
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 Project: Cathay-style IROP Re-accommodation \'97 Staff Console & IOC Dashboard\
+\
+Visual language:\
+- Primary: Cathay Jade #006564, Co-primary: White #FFFFFF\
+- Neutrals: Medium Jade #367D79, Light Jade #5E967E, Sand #C1B49A, Light Sand #DCD3BC, Slate #C6C2C1, Light Slate #EBEDEC\
+- Accent (sparingly): Saffron #C2262E\
+- Type: Inter/SF Pro; 8pt spacing grid; card radius 12; table rows 44; button 40/48\
+\
+Foundations (create as styles/components):\
+- Color styles + semantic tokens (Success, Warning, Info)\
+- Text styles: PageTitle 24/32 sb, SectionTitle 18/24 md, Body 14/20 reg, Mono 12\
+- Components: TopNav, FilterBar (chips + dropdowns), MetricCard, OptionCard (staff variant with WHY accordion), Table (sortable, selectable), Drawer Panel, Toast, Pagination, Tag (Tier: Green/Silver/Gold/Diamond), PolicyCallout, Toggle (\'93Protect premium inventory\'94)\
+\
+Frames to generate:\
+1) Desktop 1440x1024 \'97 \'93Agent Passenger Panel\'94\
+   - Layout: 3 columns\
+     \'95 Left (280): Passenger summary card: PNR (ABCDE1), Name, Tier (Diamond), Value tags, SSRs, Contact, Original itinerary card\
+     \'95 Center (flex): Three OptionCards (staff variant) each with:\
+       - Key times/route/cabin/seat map icon\
+       - TRV score pill, badges (Greener/Protect status)\
+       - WHY accordion (3\'965 bullets: tier weight, arrival delta, downstream misconnect risk, revenue protect note, policy waiver)\
+     \'95 Right (320): Actions card: [Accept & Ticket], [Swap incentive], [Hold seat], [Send link to passenger], [Escalate]\
+       - PolicyCallout area (e.g., \'93Waiver: overnight hotel allowed\'94)\
+   - Footer status bar: \'93Confidence 82% \'95 Inventory protected: J/D/C\'94\
+\
+2) Desktop 1440x1024 \'97 \'93IOC Queues\'94\
+   - TopNav with title \'93IROP Recovery\'94\
+   - FilterBar: Station (HKG), Severity, Cabin, Tier, Family/PRM, Time window\
+   - MetricCards (row of 4): Auto-reaccommodated %, Median time-to-new-plan, Premium revenue protected, Voucher cost/pax\
+   - Queue list by flight (cards): CX255 HKG\uc0\u8594 LHR (132 affected), CX881 LAX\u8594 HKG (98), etc.\
+     \'95 Each card: breakdown by tier/cabin, % default option suitable, red exceptions count\
+   - Bulk Action bar appears on selection: [Apply default], [Protect premium], [Send offers], [Open cohort]\
+\
+3) Desktop 1440x1024 \'97 \'93Cohort Detail\'94\
+   - Header: Flight CX255 \'97 132 affected\
+   - Split view:\
+     \'95 Left table (selectable): PNR, Name, Tier, Default option (A/B/C), Confidence, Exception flag, Notes\
+     \'95 Right drawer (when row selected): shows the same OptionCards + WHY; action buttons; activity log\
+   - Bottom bar: bulk accept selected, schedule, add note, export CSV\
+   - Pagination + search\
+\
+4) Desktop 1440x1024 \'97 \'93Reports\'94\
+   - Charts: trend of Auto-reaccommodated %, time-to-plan distribution, voucher cost/pax over past 7 days\
+   - Table: compensation bundle uptake (miles/meal/hotel/upgrade)\
+   - Filters + export\
+\
+5) States\
+   - Empty queue, Loading shimmer, Error w/ retry, Read-only mode (when inventory locked)\
+\
+Interactions & prototyping:\
+- From Queues \uc0\u8594  Cohort Detail \u8594  Row select opens Drawer\
+- Actions fire Toast confirmations (e.g., \'9312 passengers re-accommodated\'94)\
+- PolicyCallout links open a Drawer with policy text\
+- Protect premium inventory = Toggle state updates OptionCards labels\
+\
+Data & realism:\
+- Seed sample data for tiers (Green/Silver/Gold/Diamond), cabins (Y/W/J/F), TRV 60\'9695 range, flags for PRM/Infant\
+- Include icons for inventory/seat map, waiver, CO\uc0\u8322  leaf, revenue shield\
+\
+Deliverables:\
+- Reusable components with props: OptionCardStaff(trv, why[], badges[], cabin, seats, arrivalDelta)\
+- Table with column controls and bulk selection patterns\
+- Auto Layout everywhere; responsive behavior for 1280\'961680 widths\
+}
