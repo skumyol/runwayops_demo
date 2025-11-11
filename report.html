@@ -491,50 +491,66 @@
                 <div class="mermaid">
                   graph TD
                   subgraph &#34;External Data Sources&#34;
-                  A1[Flight Schedules &amp; Status]
-                  A2[Weather Data]
-                  A3[Air Traffic Control]
-                  A4[Airport Operations]
+                    A1[Flight Schedules & Status]
+                    A2[Weather Data]
+                    A3[Air Traffic Control]
+                    A4[Airport Operations]
                   end
 
-                  subgraph &#34;Data Ingestion &amp; Prediction&#34;
-                  B1[Real-Time Data Stream]
-                  B2[Disruption Signal Generator&lt;br/&gt;(Predictive AI Model)]
+                  subgraph &#34;Data Ingestion and Prediction&#34;
+                    B1[Real-Time Data Stream]
+                    B2[Disruption Signal Generator<br/>Predictive AI Model]
                   end
 
                   subgraph &#34;Core Multi-Agent System&#34;
-                  C1[Orchestrator Agent&lt;br/&gt;(LLM-Powered)]
-                  subgraph &#34;Specialized Sub-Agents&#34;
-                  D1[Risk Assessment Agent]
-                  D2[Rebooking Agent]
-                  D3[Finance Agent]
-                  D4[Crew Management Agent]
-                  end
+                    C1[Orchestrator Agent<br/>LLM-Powered]
                   end
 
-                  subgraph &#34;Data Storage &amp; Audit&#34;
-                  E1[Operational Database&lt;br/&gt;(PostgreSQL)]
-                  E2[Immutable Audit Trail&lt;br/&gt;(Blackbox)]
+                  subgraph &#34;Specialized Sub-Agents&#34;
+                    D1[Risk Assessment Agent]
+                    D2[Rebooking Agent]
+                    D3[Finance Agent]
+                    D4[Crew Management Agent]
+                  end
+
+                  subgraph &#34;Data Storage & Audit&#34;
+                    E1[Operational Database<br/>PostgreSQL]
+                    E2[Immutable Audit Trail<br/>Blackbox]
                   end
 
                   subgraph &#34;User Interfaces&#34;
-                  F1[Operations Dashboard&lt;br/&gt;(Human-in-the-Loop)]
-                  F2[Customer Mobile App&lt;br/&gt;&amp; Voice Assistant]
+                    F1[Operations Dashboard<br/>Human-in-the-Loop]
+                    F2[Customer Mobile App<br/>and Voice Assistant]
                   end
 
                   %% Data Flow
-                  A1 &amp; A2 &amp; A3 &amp; A4 --&gt; B1
-                  B1 --&gt; B2
-                  B2 --&gt; C1
-                  C1 --&gt; D1 &amp; D2 &amp; D3 &amp; D4
-                  D1 &amp; D2 &amp; D3 &amp; D4 --&gt; C1
-                  C1 --&gt; F1
-                  F1 --&gt; C1
-                  C1 --&gt; F2
-                  C1 --&gt; E1
-                  E1 --&gt; D1 &amp; D2 &amp; D3 &amp; D4
-                  C1 --&gt; E2
-                  D1 &amp; D2 &amp; D3 &amp; D4 --&gt; E2
+                  A1 --> B1
+                  A2 --> B1
+                  A3 --> B1
+                  A4 --> B1
+                  B1 --> B2
+                  B2 --> C1
+                  C1 --> D1
+                  C1 --> D2
+                  C1 --> D3
+                  C1 --> D4
+                  D1 --> C1
+                  D2 --> C1
+                  D3 --> C1
+                  D4 --> C1
+                  C1 --> F1
+                  F1 --> C1
+                  C1 --> F2
+                  C1 --> E1
+                  E1 --> D1
+                  E1 --> D2
+                  E1 --> D3
+                  E1 --> D4
+                  C1 --> E2
+                  D1 --> E2
+                  D2 --> E2
+                  D3 --> E2
+                  D4 --> E2
 
                   %% Styling
                   classDef dataSource fill:#f9f,stroke:#333,stroke-width:2px
