@@ -1,0 +1,8 @@
+node_modules/
+backend/data/db/
+backend/data/logs/
+backend/data/manifests/
+.gitattributes
+.DS_Store
+backend/.env
+backend/app/routes/__pycache__/reaccommodation.cpython-312.pyc
