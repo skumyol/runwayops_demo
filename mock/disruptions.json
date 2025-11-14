@@ -3,14 +3,14 @@
     "disruptionId": "DIS-20251114-CX255",
     "flightNumber": "CX255",
     "flightDate": "2025-11-14",
-    "scheduledDeparture": "2025-11-14T14:45:01.150698+00:00",
-    "scheduledArrival": "2025-11-15T03:45:01.150698+00:00",
+    "scheduledDeparture": "2025-11-14T15:05:03.748620+00:00",
+    "scheduledArrival": "2025-11-15T04:05:03.748620+00:00",
     "type": "WEATHER",
     "rootCause": "Weather en-route",
     "status": "PREDICTED",
     "impact": {
       "delayMinutes": 20,
-      "newDeparture": "2025-11-14T15:05:01.150698+00:00",
+      "newDeparture": "2025-11-14T15:25:03.748620+00:00",
       "cancelled": false
     },
     "passengerImpact": {
@@ -36,7 +36,7 @@
       "hotelBookingId": "HTL-24308",
       "crewSwap": [],
       "approvedBy": "OPS-001",
-      "approvedAt": "2025-11-14T12:20:01.239386+00:00",
+      "approvedAt": "2025-11-14T12:40:03.834782+00:00",
       "confidence": 0.84,
       "aircraftSwapCandidate": "B-LXAF"
     }
@@ -45,14 +45,14 @@
     "disruptionId": "DIS-20251114-CX520",
     "flightNumber": "CX520",
     "flightDate": "2025-11-14",
-    "scheduledDeparture": "2025-11-14T15:24:01.239492+00:00",
-    "scheduledArrival": "2025-11-14T19:29:01.239492+00:00",
+    "scheduledDeparture": "2025-11-14T15:44:03.834891+00:00",
+    "scheduledArrival": "2025-11-14T19:49:03.834891+00:00",
     "type": "DELAY",
     "rootCause": "Maintenance release hold",
     "status": "PREDICTED",
     "impact": {
       "delayMinutes": 99,
-      "newDeparture": "2025-11-14T17:03:01.239492+00:00",
+      "newDeparture": "2025-11-14T17:23:03.834891+00:00",
       "cancelled": false
     },
     "passengerImpact": {
@@ -78,7 +78,7 @@
       "hotelBookingId": "HTL-20599",
       "crewSwap": [],
       "approvedBy": "OPS-003",
-      "approvedAt": "2025-11-14T12:20:01.321563+00:00",
+      "approvedAt": "2025-11-14T12:40:03.915164+00:00",
       "confidence": 0.95,
       "aircraftSwapCandidate": null
     }
@@ -87,14 +87,14 @@
     "disruptionId": "DIS-20251114-CX903",
     "flightNumber": "CX903",
     "flightDate": "2025-11-14",
-    "scheduledDeparture": "2025-11-14T14:38:01.321667+00:00",
-    "scheduledArrival": "2025-11-14T16:58:01.321667+00:00",
+    "scheduledDeparture": "2025-11-14T14:58:03.915264+00:00",
+    "scheduledArrival": "2025-11-14T17:18:03.915264+00:00",
     "type": "CREW",
     "rootCause": "Ground handling delay",
     "status": "PREDICTED",
     "impact": {
       "delayMinutes": 56,
-      "newDeparture": "2025-11-14T15:34:01.321667+00:00",
+      "newDeparture": "2025-11-14T15:54:03.915264+00:00",
       "cancelled": false
     },
     "passengerImpact": {
@@ -124,7 +124,7 @@
         "CX120034"
       ],
       "approvedBy": "OPS-001",
-      "approvedAt": "2025-11-14T12:20:01.367999+00:00",
+      "approvedAt": "2025-11-14T12:40:03.959393+00:00",
       "confidence": 0.84,
       "aircraftSwapCandidate": null
     }
@@ -133,14 +133,14 @@
     "disruptionId": "DIS-20251114-CX865",
     "flightNumber": "CX865",
     "flightDate": "2025-11-14",
-    "scheduledDeparture": "2025-11-14T14:16:01.368100+00:00",
-    "scheduledArrival": "2025-11-15T02:16:01.368100+00:00",
+    "scheduledDeparture": "2025-11-14T14:36:03.959479+00:00",
+    "scheduledArrival": "2025-11-15T02:36:03.959479+00:00",
     "type": "CREW",
     "rootCause": "Ground handling delay",
     "status": "PREDICTED",
     "impact": {
       "delayMinutes": 140,
-      "newDeparture": "2025-11-14T16:36:01.368100+00:00",
+      "newDeparture": "2025-11-14T16:56:03.959479+00:00",
       "cancelled": false
     },
     "passengerImpact": {
@@ -166,7 +166,7 @@
       "hotelBookingId": "HTL-16991",
       "crewSwap": [],
       "approvedBy": "OPS-002",
-      "approvedAt": "2025-11-14T12:20:01.479555+00:00",
+      "approvedAt": "2025-11-14T12:40:04.063364+00:00",
       "confidence": 0.95,
       "aircraftSwapCandidate": null
     }
@@ -175,14 +175,14 @@
     "disruptionId": "DIS-20251114-CX315",
     "flightNumber": "CX315",
     "flightDate": "2025-11-14",
-    "scheduledDeparture": "2025-11-14T14:37:01.479653+00:00",
-    "scheduledArrival": "2025-11-15T02:57:01.479653+00:00",
+    "scheduledDeparture": "2025-11-14T14:57:04.063461+00:00",
+    "scheduledArrival": "2025-11-15T03:17:04.063461+00:00",
     "type": "CREW",
     "rootCause": "ATC slot restriction",
     "status": "PREDICTED",
     "impact": {
       "delayMinutes": 114,
-      "newDeparture": "2025-11-14T16:31:01.479653+00:00",
+      "newDeparture": "2025-11-14T16:51:04.063461+00:00",
       "cancelled": false
     },
     "passengerImpact": {
@@ -216,7 +216,7 @@
         "CX120061"
       ],
       "approvedBy": "OPS-001",
-      "approvedAt": "2025-11-14T12:20:01.556525+00:00",
+      "approvedAt": "2025-11-14T12:40:04.135958+00:00",
       "confidence": 0.7,
       "aircraftSwapCandidate": null
     }
@@ -225,14 +225,14 @@
     "disruptionId": "DIS-20251114-CX872",
     "flightNumber": "CX872",
     "flightDate": "2025-11-14",
-    "scheduledDeparture": "2025-11-14T13:37:01.556613+00:00",
-    "scheduledArrival": "2025-11-15T02:17:01.556613+00:00",
+    "scheduledDeparture": "2025-11-14T13:57:04.136051+00:00",
+    "scheduledArrival": "2025-11-15T02:37:04.136051+00:00",
     "type": "WEATHER",
     "rootCause": "Ground handling delay",
     "status": "ACTIVE",
     "impact": {
       "delayMinutes": 167,
-      "newDeparture": "2025-11-14T16:24:01.556613+00:00",
+      "newDeparture": "2025-11-14T16:44:04.136051+00:00",
       "cancelled": false
     },
     "passengerImpact": {
@@ -264,7 +264,7 @@
         "CX120078"
       ],
       "approvedBy": "OPS-002",
-      "approvedAt": "2025-11-14T12:20:01.642432+00:00",
+      "approvedAt": "2025-11-14T12:40:04.213004+00:00",
       "confidence": 0.97,
       "aircraftSwapCandidate": null
     }
@@ -273,14 +273,14 @@
     "disruptionId": "DIS-20251114-CX708",
     "flightNumber": "CX708",
     "flightDate": "2025-11-14",
-    "scheduledDeparture": "2025-11-14T13:23:01.642541+00:00",
-    "scheduledArrival": "2025-11-14T16:53:01.642541+00:00",
+    "scheduledDeparture": "2025-11-14T13:43:04.213099+00:00",
+    "scheduledArrival": "2025-11-14T17:13:04.213099+00:00",
     "type": "CREW",
     "rootCause": "Maintenance release hold",
     "status": "ACTIVE",
     "impact": {
       "delayMinutes": 132,
-      "newDeparture": "2025-11-14T15:35:01.642541+00:00",
+      "newDeparture": "2025-11-14T15:55:04.213099+00:00",
       "cancelled": false
     },
     "passengerImpact": {
@@ -312,7 +312,7 @@
         "CX120085"
       ],
       "approvedBy": "OPS-003",
-      "approvedAt": "2025-11-14T12:20:01.700032+00:00",
+      "approvedAt": "2025-11-14T12:40:04.265216+00:00",
       "confidence": 0.94,
       "aircraftSwapCandidate": null
     }
@@ -321,14 +321,14 @@
     "disruptionId": "DIS-20251114-CX255",
     "flightNumber": "CX255",
     "flightDate": "2025-11-14",
-    "scheduledDeparture": "2025-11-14T13:04:01.700124+00:00",
-    "scheduledArrival": "2025-11-15T02:04:01.700124+00:00",
+    "scheduledDeparture": "2025-11-14T13:24:04.265302+00:00",
+    "scheduledArrival": "2025-11-15T02:24:04.265302+00:00",
     "type": "ATC",
     "rootCause": "ATC slot restriction",
     "status": "ACTIVE",
     "impact": {
       "delayMinutes": 75,
-      "newDeparture": "2025-11-14T14:19:01.700124+00:00",
+      "newDeparture": "2025-11-14T14:39:04.265302+00:00",
       "cancelled": false
     },
     "passengerImpact": {
@@ -358,7 +358,7 @@
         "CX120100"
       ],
       "approvedBy": "OPS-002",
-      "approvedAt": "2025-11-14T12:20:01.778695+00:00",
+      "approvedAt": "2025-11-14T12:40:04.342921+00:00",
       "confidence": 0.91,
       "aircraftSwapCandidate": null
     }
@@ -367,14 +367,14 @@
     "disruptionId": "DIS-20251114-CX520",
     "flightNumber": "CX520",
     "flightDate": "2025-11-14",
-    "scheduledDeparture": "2025-11-14T13:24:01.778788+00:00",
-    "scheduledArrival": "2025-11-14T17:29:01.778788+00:00",
+    "scheduledDeparture": "2025-11-14T13:44:04.343026+00:00",
+    "scheduledArrival": "2025-11-14T17:49:04.343026+00:00",
     "type": "WEATHER",
     "rootCause": "Ground handling delay",
     "status": "ACTIVE",
     "impact": {
       "delayMinutes": 105,
-      "newDeparture": "2025-11-14T15:09:01.778788+00:00",
+      "newDeparture": "2025-11-14T15:29:04.343026+00:00",
       "cancelled": false
     },
     "passengerImpact": {
@@ -406,7 +406,7 @@
         "CX120112"
       ],
       "approvedBy": "OPS-002",
-      "approvedAt": "2025-11-14T12:20:01.858526+00:00",
+      "approvedAt": "2025-11-14T12:40:04.425953+00:00",
       "confidence": 0.74,
       "aircraftSwapCandidate": "B-LRAJ"
     }
@@ -415,14 +415,14 @@
     "disruptionId": "DIS-20251114-CX903",
     "flightNumber": "CX903",
     "flightDate": "2025-11-14",
-    "scheduledDeparture": "2025-11-14T13:15:01.858640+00:00",
-    "scheduledArrival": "2025-11-14T15:35:01.858640+00:00",
+    "scheduledDeparture": "2025-11-14T13:35:04.426060+00:00",
+    "scheduledArrival": "2025-11-14T15:55:04.426060+00:00",
     "type": "DELAY",
     "rootCause": "Crew legality",
     "status": "ACTIVE",
     "impact": {
       "delayMinutes": 99,
-      "newDeparture": "2025-11-14T14:54:01.858640+00:00",
+      "newDeparture": "2025-11-14T15:14:04.426060+00:00",
       "cancelled": false
     },
     "passengerImpact": {
@@ -448,7 +448,7 @@
       "hotelBookingId": "HTL-82727",
       "crewSwap": [],
       "approvedBy": "OPS-002",
-      "approvedAt": "2025-11-14T12:20:01.922197+00:00",
+      "approvedAt": "2025-11-14T12:40:04.490171+00:00",
       "confidence": 0.76,
       "aircraftSwapCandidate": null
     }
@@ -457,14 +457,14 @@
     "disruptionId": "DIS-20251114-CX865",
     "flightNumber": "CX865",
     "flightDate": "2025-11-14",
-    "scheduledDeparture": "2025-11-14T13:27:01.922285+00:00",
-    "scheduledArrival": "2025-11-15T01:27:01.922285+00:00",
+    "scheduledDeparture": "2025-11-14T13:47:04.490271+00:00",
+    "scheduledArrival": "2025-11-15T01:47:04.490271+00:00",
     "type": "ATC",
     "rootCause": "ATC slot restriction",
     "status": "PREDICTED",
     "impact": {
       "delayMinutes": 100,
-      "newDeparture": "2025-11-14T15:07:01.922285+00:00",
+      "newDeparture": "2025-11-14T15:27:04.490271+00:00",
       "cancelled": false
     },
     "passengerImpact": {
@@ -498,7 +498,7 @@
         "CX120137"
       ],
       "approvedBy": "OPS-002",
-      "approvedAt": "2025-11-14T12:20:01.997223+00:00",
+      "approvedAt": "2025-11-14T12:40:04.566039+00:00",
       "confidence": 0.72,
       "aircraftSwapCandidate": null
     }
@@ -507,14 +507,14 @@
     "disruptionId": "DIS-20251114-CX315",
     "flightNumber": "CX315",
     "flightDate": "2025-11-14",
-    "scheduledDeparture": "2025-11-14T15:30:01.997329+00:00",
-    "scheduledArrival": "2025-11-15T03:50:01.997329+00:00",
+    "scheduledDeparture": "2025-11-14T15:50:04.566149+00:00",
+    "scheduledArrival": "2025-11-15T04:10:04.566149+00:00",
     "type": "CREW",
     "rootCause": "ATC slot restriction",
     "status": "ACTIVE",
     "impact": {
       "delayMinutes": 59,
-      "newDeparture": "2025-11-14T16:29:01.997329+00:00",
+      "newDeparture": "2025-11-14T16:49:04.566149+00:00",
       "cancelled": false
     },
     "passengerImpact": {
@@ -540,7 +540,7 @@
       "hotelBookingId": "HTL-99009",
       "crewSwap": [],
       "approvedBy": "OPS-001",
-      "approvedAt": "2025-11-14T12:20:02.096239+00:00",
+      "approvedAt": "2025-11-14T12:40:04.667499+00:00",
       "confidence": 0.92,
       "aircraftSwapCandidate": "B-LRAA"
     }
