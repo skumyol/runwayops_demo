@@ -5,4 +5,6 @@ backend/data/manifests/
 .gitattributes
 .DS_Store
 backend/.env
-backend/app/routes/__pycache__/reaccommodation.cpython-312.pyc
+backend/app/routes/__pycache__/
+backend/app/agents/__pycache__
+backend/.env
