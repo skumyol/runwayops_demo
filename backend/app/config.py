@@ -10,6 +10,7 @@ env_path = Path(__file__).parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
 ALLOWED_MODES = {"synthetic", "realtime", "mongo"}
+AGENTIC_ENGINES = {"apiv2"}  # Only APIV2 (ADK) is supported
 
 
 @dataclass(slots=True)
@@ -29,6 +30,7 @@ class Settings:
     mongo_simulation_collection: str = "agent_simulations"
     # Agentic system settings
     agentic_enabled: bool = False
+    agentic_mode: str = "apiv2"
     llm_provider: str = "openai"  # openai, openrouter, deepseek, gemini
     llm_model: str = "gpt-4o"
     llm_temperature: float = 0.2
@@ -41,6 +43,10 @@ class Settings:
     openai_base_url: str | None = None
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
     deepseek_base_url: str = "https://api.deepseek.com"
+    # Amadeus API settings
+    amadeus_client_id: str | None = None
+    amadeus_client_secret: str | None = None
+    amadeus_environment: str = "test"  # test or production
 
     def __post_init__(self) -> None:
         mode = os.getenv("FLIGHT_MONITOR_MODE", "synthetic").lower()
@@ -84,6 +90,8 @@ class Settings:
             "1",
             "yes",
         )
+        requested_engine = os.getenv("AGENTIC_MODE", self.agentic_mode).lower()
+        self.agentic_mode = requested_engine if requested_engine in AGENTIC_ENGINES else "apiv2"
         self.llm_provider = os.getenv("LLM_PROVIDER", self.llm_provider).lower()
         self.llm_model = os.getenv("LLM_MODEL", self.llm_model)
         self.llm_temperature = float(
@@ -102,6 +110,10 @@ class Settings:
         self.deepseek_base_url = os.getenv(
             "DEEPSEEK_BASE_URL", self.deepseek_base_url
         )
+        # Amadeus API
+        self.amadeus_client_id = os.getenv("AMADEUS_CLIENT_ID")
+        self.amadeus_client_secret = os.getenv("AMADEUS_CLIENT_SECRET")
+        self.amadeus_environment = os.getenv("AMADEUS_ENVIRONMENT", self.amadeus_environment)
 
 
 settings = Settings()

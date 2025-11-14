@@ -32,6 +32,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "faker" },
     { name = "fastapi" },
+    { name = "google-adk" },
     { name = "httpx" },
     { name = "kafka-python" },
     { name = "motor" },
@@ -45,6 +46,7 @@ dependencies = [
 requires-dist = [
     { name = "faker", specifier = "==30.6.0" },
     { name = "fastapi", specifier = "==0.115.5" },
+    { name = "google-adk", specifier = ">=0.0.1" },
     { name = "httpx", specifier = "==0.27.2" },
     { name = "kafka-python", specifier = "==2.0.2" },
     { name = "motor", specifier = "==3.6.0" },
@@ -118,6 +120,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ae/29/f71316b9273b6552a263748e49cd7b83898dc9499a663d30c7b9cb853cb8/fastapi-0.115.5.tar.gz", hash = "sha256:0e7a4d0dc0d01c68df21887cce0945e72d3c48b9f4f79dfe7a7d53aa08fbb289", size = 301047, upload_time = "2024-11-12T16:17:34.8Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/54/c4/148d5046a96c428464557264877ae5a9338a83bbe0df045088749ec89820/fastapi-0.115.5-py3-none-any.whl", hash = "sha256:596b95adbe1474da47049e802f9a65ab2ffa9c2b07e7efee70eb8a66c9f2f796", size = 94866, upload_time = "2024-11-12T16:17:31.027Z" },
+]
+
+[[package]]
+name = "google-adk"
+version = "0.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/0b/2c/0865745f3c532a9f8cfcfdd8fd7db9288e8ba8f3ca64722938f95b2d26ca/google_adk-0.0.1.tar.gz", hash = "sha256:df43f5d9e91066bf3e8dbee49efb56acca177da3cb170e1f793cb55eaadc56f9", size = 5343, upload_time = "2025-03-17T17:49:29.932Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/15/0d/9b971b144200bc3905abd520249275d2ccca627d63de2001f8a7308ab253/google_adk-0.0.1-py3-none-any.whl", hash = "sha256:3901e48732413d02fdba0a0cd02d965325253fc19166f181049daf93f473f225", size = 5521, upload_time = "2025-03-17T17:49:28.521Z" },
 ]
 
 [[package]]

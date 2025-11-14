@@ -1,233 +1,143 @@
-### LangGraph Workflow for Your Flight Disruption System
+# APIV2 Agentic System Blueprint
 
-Based on your system design, I've implemented a **complete, runnable LangGraph workflow** in Python. This uses **LangGraph** (from LangChain) to model the multi-agent orchestration as a stateful graph. It's tailored for your Cathay Pacific hackathon prototype, integrating:
+This blueprint re-implements the flight disruption agentic structure as **APIV2**. LangGraph continues to live as the fast, local orchestration surface for hackathon demos and regression tests, while the new `google_a2a_agents_apiV2` stack (Google Agent Development Kit + Vertex AI) becomes the production brain that can call real airline systems such as Amadeus. Use this document instead of the previous LangGraph-only write-up.
 
-- **Predictive Signal Generator**: A mock ML node that triggers on data stream input (e.g., flight details + signals).
-- **Orchestrator Agent**: LLM-backed (using Grok/OpenAI) to decide if a disruption is likely (>70% threshold) and simulate plans.
-- **Sub-Agents**: Risk, Rebooking, Finance, Crew—each is an LLM tool that processes input, provides transparent reasoning (logged to state), and outputs decisions.
-- **Transparency**: Every agent appends its **full reasoning trace** (prompt + output) to a shared state (`audit_log`), making decisions auditable.
-- **What-If Functionality**: The graph includes **branching**—the Orchestrator can simulate "what-if" scenarios (e.g., "What if delay >3 hours?") by running parallel paths (using LangGraph's conditional edges). Results are compared in a final "Simulation Aggregator" node.
-- **Blackbox Logging**: All state updates are appended to an immutable log (list in state; persist to MongoDB/JSON in production).
-- **Integration Hooks**: Outputs feed to ops dashboard (e.g., via Streamlit callback) and passenger app (e.g., voice chat prompt).
+## Dual Runtime Strategy
 
-#### Key Assumptions & Setup
+| Concern | LangGraph Surface (v1) | `google_a2a_agents_apiV2` Surface (APIV2) |
+| --- | --- | --- |
+| Execution scope | On-demand runs inside `backend` or notebooks; perfect for quick AI analysis triggers | Long-running agent service (Vertex AI Agent Engine / Cloud Run) with retry + monitoring |
+| Ownership | Remains source-of-truth for graph topology and guardrails | Hosts the intelligent hierarchy (Predictive → Orchestrator → Risk/Rebooking/Finance/Crew → Aggregator) |
+| Primary LLM | OpenAI / Grok via `langchain_openai` | Gemini 1.5 Pro (temperature 0.2) with OpenAI/Grok fallbacks |
+| Tooling | Existing Python functions, mock data, and LangGraph conditional edges | ADK `LlmAgent`, `Sequential`, `Parallel`, and custom tools (Amadeus, Hotel, Cost calculators) |
+| Observability | MongoDB audit log + dashboard tab in Vite UI | Streamlit / Firestore-backed Mission Control Panel (MCP) with Firestore traces and Vertex logs |
 
-- **LLM**: Uses Grok/OpenAI (replace with your key). Agents are tool-calling enabled for structured output.
-- **Data Input**: Assumes mock data (from your generators: passengers, crew, disruptions, aircraft).
-- **Thresholds**: Disruption if risk >70%; critical if duration >180 min (3 hours, per EU 261/HKCAD regs).
-- **Run**: This is a standalone script—MVP for hackathon. Extend with FastAPI for API/dashboard integration.
-- **Install**: `pip install langgraph langchain langchain_openai pydantic` (or use Grok equivalent).
+**Key idea:** trigger evaluation still enters LangGraph first (cheap heuristics, deterministic gating). Once disruption probability > 70%, hand the state payload to APIV2 so Google ADK executes the richer workflow and emits structured plans back to FastAPI + Vite. This lets us iterate locally without blocking the higher-fidelity agent service.
 
-#### Full Code: `disruption_workflow.py`
+## APIV2 Architecture Overview
 
-```python
-import json
-from typing import TypedDict, List, Dict, Any
-from langchain_core.tools import tool
-from langchain_openai import ChatOpenAI  # Replace with Grok if using xAI
-from langgraph.graph import StateGraph, END
-from langgraph.graph.message import add_messages
-from langgraph.checkpoint.sqlite import SqliteSaver  # For persistence (what-if replays)
-
-# LLM Setup (use your API key)
-llm = ChatOpenAI(model="gpt-4o", temperature=0.2, api_key="YOUR_OPENAI_KEY")  # Or Grok equivalent
-
-# State Definition (shared across graph – transparent & immutable)
-class AgentState(TypedDict):
-    input_data: Dict  # Flight details + signals from stream
-    disruption_detected: bool
-    risk_assessment: Dict
-    rebooking_plan: Dict
-    finance_estimate: Dict
-    crew_rotation: Dict
-    simulation_results: List[Dict]  # For what-if branches
-    audit_log: List[Dict]  # Transparent reasoning traces (immutable appends)
-    final_plan: Dict  # Aggregated output for ops/passenger
-
-# Helper: Log transparent reasoning
-def log_reasoning(state: AgentState, agent_name: str, input: Any, output: Any):
-    trace = {
-        "agent": agent_name,
-        "input": input,
-        "output": output,
-        "timestamp": datetime.now().isoformat()
-    }
-    state["audit_log"].append(trace)
-    return state
-
-# -----------------------------
-# Nodes (Agents & Functions)
-# -----------------------------
-
-# Node 1: Predictive Signal Generator (Mock ML – replace with LSTM)
-@tool
-def predictive_signal_generator(input_data: Dict) -> Dict:
-    """Mock ML: Analyzes data stream for disruption signals."""
-    # Simulate LSTM: Check delay probability
-    signals = input_data.get("signals", {})
-    risk_prob = random.uniform(0.5, 0.95)  # Real: LSTM output
-    detected = risk_prob > 0.7
-    reasoning = f"Analyzed signals (weather: {signals.get('weather', 'N/A')}, maintenance: {signals.get('maintenance', 'N/A')}). Risk: {risk_prob:.2f}."
-    return {"disruption_detected": detected, "reasoning": reasoning, "risk_prob": risk_prob}
-
-def predictive_node(state: AgentState):
-    result = predictive_signal_generator.invoke(state["input_data"])
-    state = log_reasoning(state, "Predictive", state["input_data"], result)
-    state["disruption_detected"] = result["disruption_detected"]
-    return state
-
-# Conditional Edge: After Predictive
-def route_after_predictive(state: AgentState):
-    if state["disruption_detected"]:
-        return "orchestrator"  # Proceed to simulation
-    else:
-        return END  # No disruption
-
-# Node 2: Orchestrator Agent (LLM – Decides & Simulates What-If)
-@tool
-def orchestrator_agent(input: Dict) -> Dict:
-    """LLM Orchestrator: Decides disruption & simulates what-if."""
-    prompt = f"""
-    Input: {json.dumps(input)}
-  
-    Task: 
-    - Assess if disruption is likely (risk >70%).
-    - Simulate main plan with sub-agents.
-    - What-If: Simulate 2 alternatives (e.g., if delay >3hrs, if crew unavailable).
-    - Output: JSON with main_plan and what_if (list of 2 sims).
-    """
-    response = llm.invoke(prompt)
-    output = json.loads(response.content)  # Assume structured JSON
-    reasoning = response.content  # Full trace
-    return {"simulations": output, "reasoning": reasoning}
-
-def orchestrator_node(state: AgentState):
-    input = {"data": state["input_data"], "predictive": state.get("risk_assessment")}
-    result = orchestrator_agent.invoke(input)
-    state = log_reasoning(state, "Orchestrator", input, result)
-    state["simulation_results"] = result["simulations"]
-    return state
-
-# Node 3-6: Sub-Agents (LLM Tools – Parallel in Graph)
-@tool
-def risk_agent(input: Dict) -> Dict:
-    prompt = f"Assess likelihood ({input['prob']}) and duration. Critical if >180 min. Reasoning: ..."
-    response = llm.invoke(prompt)
-    return {"likelihood": 0.85, "duration_min": 120, "reasoning": response.content}  # Structured
-
-def risk_node(state: AgentState):
-    result = risk_agent.invoke(state["input_data"])
-    state = log_reasoning(state, "Risk", state["input_data"], result)
-    state["risk_assessment"] = result
-    return state
-
-# Similar for others (stubbed for brevity)
-@tool
-def rebooking_agent(input: Dict) -> Dict:
-    # Use passenger profile, hotels API
-    return {"plan": "Rebook to CX882 + hotel", "reasoning": "..."}
-
-def rebooking_node(state: AgentState):
-    result = rebooking_agent.invoke(state)
-    state = log_reasoning(state, "Rebooking", {}, result)
-    state["rebooking_plan"] = result
-    return state
-
-@tool
-def finance_agent(input: Dict) -> Dict:
-    # Cost calc based on delay, pax
-    return {"total_usd": 32000, "reasoning": "..."}
-
-def finance_node(state: AgentState):
-    result = finance_agent.invoke(state)
-    state = log_reasoning(state, "Finance", {}, result)
-    state["finance_estimate"] = result
-    return state
-
-@tool
-def crew_agent(input: Dict) -> Dict:
-    # Roster rotations, regulations
-    return {"swap": ["CX123"], "reasoning": "..."}
-
-def crew_node(state: AgentState):
-    result = crew_agent.invoke(state)
-    state = log_reasoning(state, "Crew", {}, result)
-    state["crew_rotation"] = result
-    return state
-
-# Node 7: Simulation Aggregator (What-If Comparator)
-def aggregator_node(state: AgentState):
-    # Compare main + what-if
-    main = state["simulation_results"][0]
-    what_if = state["simulation_results"][1:]
-    final = {"main": main, "what_if": what_if, "best": main if random.random() > 0.5 else what_if[0]}
-    state["final_plan"] = final
-    return log_reasoning(state, "Aggregator", state["simulation_results"], final)
-
-# -----------------------------
-# Build the Graph
-# -----------------------------
-graph = StateGraph(AgentState)
-graph.add_node("predictive", predictive_node)
-graph.add_conditional_edges("predictive", route_after_predictive, {"orchestrator": "orchestrator", END: END})
-graph.add_node("orchestrator", orchestrator_node)
-graph.add_node("risk", risk_node)
-graph.add_node("rebooking", rebooking_node)
-graph.add_node("finance", finance_node)
-graph.add_node("crew", crew_node)
-graph.add_node("aggregator", aggregator_node)
-
-# Parallel Sub-Agents (after Orchestrator)
-graph.add_edge("orchestrator", "risk")
-graph.add_edge("orchestrator", "rebooking")
-graph.add_edge("orchestrator", "finance")
-graph.add_edge("orchestrator", "crew")
-
-# Converge to Aggregator
-graph.add_edge("risk", "aggregator")
-graph.add_edge("rebooking", "aggregator")
-graph.add_edge("finance", "aggregator")
-graph.add_edge("crew", "aggregator")
-
-graph.set_entry_point("predictive")
-graph.compile(checkpointer=SqliteSaver.from_conn_string(":memory:"))
-
-# -----------------------------
-# Run the Workflow
-# -----------------------------
-def run_workflow(input_data: Dict):
-    initial_state = {"input_data": input_data, "audit_log": []}
-    result = graph.invoke(initial_state)
-    # Output to dashboard: result["final_plan"]
-    # Blackbox: json.dump(result["audit_log"], open('blackbox.json', 'a'))
-    return result
-
-# Example Input (from your mocks)
-example_input = {
-    "flight_details": {"number": "CX880", "departure": "2025-11-11T22:00:00Z"},
-    "signals": {"weather": "Storm warning", "maintenance": "APU fault"}
-}
-output = run_workflow(example_input)
-print(json.dumps(output, indent=2))
+```
+Flight Monitor Streams (synthetic/realtime)
+        │
+        ▼
+LangGraph Guardrail Graph (predictive check, throttle, legacy mocks)
+        │ handoff via REST/gRPC (AgentState JSON)
+        ▼
+Google ADK Orchestrator (APIV2)
+  ├─ Predictive Tool (TensorFlow Lite / heuristics)
+  ├─ LlmAgent Orchestrator (Gemini)
+  └─ Parallel Sub-Agents
+       ├─ Risk Agent
+       ├─ Rebooking Agent (Amadeus, Hotels)
+       ├─ Finance Agent
+       └─ Crew Agent
+        │
+        ▼
+Aggregator + Audit Log Writer (Firestore/Mongo)
+        │
+        ├─ Mission Control Panel (Streamlit/WebSocket)
+        └─ FastAPI `/api/disruption` + Vite dashboard
 ```
 
-#### How It Works
+## Code Layout
 
-1. **Start**: Predictive node checks signals → routes to Orchestrator if detected.
-2. **Orchestrator**: LLM decides & simulates what-if (e.g., branch 1: base plan; branch 2: if delay >3hrs → cancel; branch 3: if crew short → divert).
-3. **Parallel Sub-Agents**: Run Risk/Rebooking/Finance/Crew concurrently (LangGraph parallelism).
-4. **Aggregator**: Compares simulations, picks best, logs everything.
-5. **Transparency**: `audit_log` captures every agent's input/reasoning/output (e.g., "Risk Agent: Given weather, likelihood=85%, reasoning=...").
-6. **What-If**: Orchestrator LLM generates multiple sims; Aggregator compares (e.g., "What if no hotels? Cost +20%").
-7. **Blackbox**: Append `audit_log` to JSON/MongoDB after each run—immutable via timestamps/hashes.
-8. **Ops Dashboard**: Call `run_workflow` from Streamlit button; display `final_plan` with what-if tabs.
-9. **Passenger App**: From approved plan, generate voice prompt: "Your flight CX880 delayed 3hrs due to [reasoning]. Rebooked to CX882 with lounge access."
+- `backend/app/agentsv2/state.py` – typed `FlightAgentState` + audit logging helper shared by every ADK stage.
+- `backend/app/agentsv2/tools.py` – deterministic Predictive, Scenario, Rebooking, Finance, Crew, and Aggregation tools that double as ADK registrations.
+- `backend/app/agentsv2/agents.py` – ADK-aligned agents (Predictive, Gemini Orchestrator, Risk, Rebooking, Finance, Crew, Aggregator) that call the tool belt.
+- `backend/app/agentsv2/workflow.py` – Sequential + Parallel composites that mimic Google ADK graph execution so FastAPI can invoke APIV2 just like the LangGraph runner.
 
-#### Testing & Extensions
+## Implementation Steps (mirrors `google_a2a_agents_apiV2`)
 
-- **Run**: `python disruption_workflow.py` (outputs JSON with full state).
-- **What-If Demo**: Modify Orchestrator prompt for custom sims (e.g., "What if fuel costs +10%?").
-- **Hackathon Polish**: Add persistence (SqliteSaver) for replaying past runs in dashboard.
-- **Scalability**: LangGraph is production-ready—deploy on AWS Lambda for real-time.
+### 1. Foundation and Environment
+- Install ADK and friends: `uv pip install google-adk google-cloud-aiplatform streamlit pydantic requests` (backed by Step 1 in the Google plan).
+- Keep `./run_dev.sh` as the unified dev entry point; it now boots the backend, Vite dashboard, *and* the APIV2 service (if `AGENTIC_MODE=apiv2`).
+- Extend `.env`: `GEMINI_API_KEY`, `VERTEX_PROJECT_ID`, `AMADEUS_CLIENT_ID`, `AMADEUS_CLIENT_SECRET`, `FLIGHT_MONITOR_MODE=synthetic` by default.
 
-This is a **hackathon-MVP workflow**—expand sub-agents with tools (e.g., hotel API for Rebooking). Test with your mocks; it should integrate seamlessly! Let me know for tweaks or dashboard code.
+### 2. Shared State and Graph Definition
+Use ADK’s `TypedDict` state (same fields as `AgentState` in LangGraph) so both runtimes stay schema-compatible.
+
+```python
+# apiv2/workflow.py
+from typing import TypedDict, List, Dict, Any
+from datetime import datetime
+from adk import LlmAgent, Sequential, Parallel
+
+class FlightAgentState(TypedDict, total=False):
+    input_data: Dict[str, Any]
+    disruption_detected: bool
+    risk_assessment: Dict[str, Any]
+    rebooking_plan: Dict[str, Any]
+    finance_estimate: Dict[str, Any]
+    crew_rotation: Dict[str, Any]
+    simulation_results: List[Dict[str, Any]]
+    audit_log: List[Dict[str, Any]]
+    final_plan: Dict[str, Any]
+
+def log_trace(state: FlightAgentState, agent: str, payload: Dict[str, Any]) -> None:
+    state.setdefault("audit_log", []).append({
+        "agent": agent,
+        "payload": payload,
+        "timestamp": datetime.utcnow().isoformat()
+    })
+
+predictive = LlmAgent.from_tool("predictive_signal_generator", model="gemini-1.5-pro")
+bridge = Sequential([predictive])
+sub_agents = Parallel([
+    LlmAgent.from_tool("risk_agent"),
+    LlmAgent.from_tool("rebooking_agent"),
+    LlmAgent.from_tool("finance_agent"),
+    LlmAgent.from_tool("crew_agent"),
+])
+workflow = Sequential([bridge, sub_agents, LlmAgent.from_tool("aggregator")])
+```
+
+- `predictive_signal_generator`, `risk_agent`, etc. can call the same Python code we previously wrapped with LangGraph tools. ADK simply gives us deployment hooks, Vertex scaling, and evaluation tooling.
+- LangGraph still runs `disruption_workflow.py` for smoke tests. When the backend is started with `AGENTIC_MODE=langgraph`, requests never leave the original graph; switching the env flag pushes payloads to the APIV2 endpoint.
+
+### 3. Tool Belt & External Systems
+Derived from Step 3 in the Google plan and grounded with `amadeus_integration.md`:
+- **Amadeus Connector** – reuse `amadeus_client.py` as the `RebookingTool`. Wrap it in an async ADK tool that can fetch offers, price them, and confirm bookings. Map results back into `rebooking_plan` (PNR, fare class, hotel fallback).
+- **Hotel / Cost Tools** – optional HTTP tools (could hit Expedia Rapid API or static mocks initially).
+- **Predictive + Crew Tools** – run existing heuristics (signal scoring, crew legality) using ADK’s Code Execution tool so Gemini orchestrator can retrieve hard numbers.
+
+### 4. Observability & Mission Control
+- Mirror Step 4 from the Google plan: push each `audit_log` entry to Firestore (or Mongo) and stream highlights over WebSocket to the MCP.
+- The MCP described in `amadeus_integration.md` stays the canonical UI; the only change is that updates now include `plan.explainability` and Vertex trace IDs so ops can click from dashboard → Vertex console if needed.
+- Keep LangGraph’s JSON log writer around for debugging; APIV2 just appends more metadata (LLM model, tool latency).
+
+### 5. Testing & Deployment
+- Unit test each tool (pytest + pytest-asyncio). Mock Amadeus responses so test suite runs offline.
+- Integration test: call `/api/disruption` twice, once with `AGENTIC_MODE=langgraph`, once with `apiv2`, and assert both return compatible schemas.
+- Deployment: containerize `apiv2/workflow.py` with the FastAPI app, or deploy it separately on Vertex AI (recommended for scale). The Google plan estimates $0.10–0.50 per run; keep budgets in line by turning on `FLIGHT_MONITOR_MODE=synthetic` during dev.
+
+## Making It Realistic with Amadeus (based on `amadeus_integration.md`)
+
+The FastAPI sample in `amadeus_integration.md` already demonstrates how to stitch a real Amadeus booking loop into the mission control workflow. To align it with APIV2:
+
+1. **`amadeus_client.py`** – keep exactly as written. Register its async methods as ADK tools so the Rebooking agent can fetch offers and confirm bookings without leaving the APIV2 graph.
+2. **`workflow_runner.py`** – expose both runtimes:
+   ```python
+   async def run_disruption_workflow(payload: dict) -> dict:
+       if settings.agentic_mode == "langgraph":
+           return await langgraph_runner(payload)
+       return await apiv2_runner(payload)  # wraps the ADK workflow above
+   ```
+3. **`main.py`** – the `/api/disruption` handler from the example now:
+   - Invokes `run_disruption_workflow`
+   - If the returned plan includes `rebooking_plan.requires_booking`, call `amadeus.search_alternatives()` then `amadeus.confirm_and_book()`
+   - Broadcast the enriched plan (PNR, new flight number) over the MCP WebSocket
+4. **`templates/mcp.html`** – keep the neon status view but add placeholders for APIV2 metadata (model, what-if branches, escalation status). The WebSocket payload already contains `plan` and `audit_log_length`; extend it with `plan.vertex_trace_url` for quick debugging.
+5. **Deployment** – reuse the Dockerfile + Cloud Run instructions from `amadeus_integration.md`. APIV2 simply adds another container or Vertex endpoint—no changes needed for the dashboard or FastAPI beyond a new env var and HTTP client.
+
+## Migration & Rollout Checklist
+
+1. ✅ Copy this doc into your planning ritual; archive the old LangGraph-only walkthrough.
+2. 🧪 Implement feature flags (`AGENTIC_MODE`) and run the dual-mode integration test.
+3. 🧰 Register Amadeus + Hotel + Cost tools inside ADK, mirroring the Google plan’s Step 3 deliverables.
+4. 📊 Stream APIV2 audit logs to both Mongo (legacy) and Firestore (new) until Vertex logger is battle-tested.
+5. 🚀 Deploy APIV2 on Vertex AI Agent Engine; point FastAPI to the new endpoint in staging, then prod.
+
+## References
+- `google_a2a_agents_apiV2` – detailed ADK migration plan (sections 1–5 referenced throughout).
+- `amadeus_integration.md` – FastAPI + MCP example that grounds the APIV2 output in real bookings.
+- `AGENTIC_INTEGRATION.md` – still valid for understanding the legacy LangGraph graph; use it for fallback mode docs.

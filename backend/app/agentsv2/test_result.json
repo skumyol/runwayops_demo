@@ -1,0 +1,183 @@
+{
+  "final_plan": {
+    "disruption_detected": false,
+    "recommended_action": "MONITOR",
+    "priority": "low",
+    "message": "No action required"
+  },
+  "audit_log": [
+    {
+      "agent": "PredictiveAgent",
+      "input": {
+        "airport": "HKG",
+        "carrier": "CX",
+        "timestamp": "2024-11-14T10:00:00Z",
+        "stats": {
+          "totalFlights": 45,
+          "delayedFlights": 12,
+          "paxImpacted": 350,
+          "avgDelay": 125,
+          "weatherScore": 0.75,
+          "aircraftScore": 0.65,
+          "crewScore": 0.55
+        },
+        "flights": [
+          {
+            "id": "CX888",
+            "number": "CX888",
+            "origin": "HKG",
+            "destination": "JFK",
+            "scheduledDeparture": "2024-11-14T14:00:00Z",
+            "estimatedDeparture": "2024-11-14T16:30:00Z",
+            "status": "delayed",
+            "statusCategory": "critical",
+            "delayMinutes": 150,
+            "passengers": 250
+          },
+          {
+            "id": "CX889",
+            "number": "CX889",
+            "origin": "HKG",
+            "destination": "LAX",
+            "scheduledDeparture": "2024-11-14T15:00:00Z",
+            "estimatedDeparture": "2024-11-14T16:00:00Z",
+            "status": "delayed",
+            "statusCategory": "warning",
+            "delayMinutes": 60,
+            "passengers": 200
+          }
+        ],
+        "alerts": [
+          {
+            "type": "weather",
+            "severity": "high",
+            "message": "Severe thunderstorms in area",
+            "affectedFlights": [
+              "CX888",
+              "CX889"
+            ]
+          }
+        ]
+      },
+      "output": {
+        "disruption_detected": false,
+        "risk_probability": 0.0,
+        "reasoning": "Weather: Clear. Aircraft: All aircraft released. Crew: All crews ready.",
+        "metrics": {
+          "total_flights": 1,
+          "delayed_flights": 0,
+          "critical_flights": 0,
+          "avg_delay_minutes": 0
+        },
+        "signal_breakdown": {
+          "weather": {
+            "score": 0.0,
+            "evidence": "Clear",
+            "impact_count": 0
+          },
+          "aircraft": {
+            "score": 0.0,
+            "evidence": "All aircraft released",
+            "impact_count": 0
+          },
+          "crew": {
+            "score": 0.0,
+            "evidence": "All crews ready",
+            "impact_count": 0
+          }
+        },
+        "drivers": [
+          {
+            "category": "Weather",
+            "score": 0.0,
+            "evidence": "Clear",
+            "impact_count": 0
+          },
+          {
+            "category": "Aircraft",
+            "score": 0.0,
+            "evidence": "All aircraft released",
+            "impact_count": 0
+          },
+          {
+            "category": "Crew",
+            "score": 0.0,
+            "evidence": "All crews ready",
+            "impact_count": 0
+          }
+        ]
+      },
+      "timestamp": "2025-11-14T10:15:25.867556"
+    }
+  ],
+  "disruption_detected": false,
+  "risk_assessment": {
+    "disruption_detected": false,
+    "risk_probability": 0.0,
+    "reasoning": "Weather: Clear. Aircraft: All aircraft released. Crew: All crews ready.",
+    "metrics": {
+      "total_flights": 1,
+      "delayed_flights": 0,
+      "critical_flights": 0,
+      "avg_delay_minutes": 0
+    },
+    "signal_breakdown": {
+      "weather": {
+        "score": 0.0,
+        "evidence": "Clear",
+        "impact_count": 0
+      },
+      "aircraft": {
+        "score": 0.0,
+        "evidence": "All aircraft released",
+        "impact_count": 0
+      },
+      "crew": {
+        "score": 0.0,
+        "evidence": "All crews ready",
+        "impact_count": 0
+      }
+    },
+    "drivers": [
+      {
+        "category": "Weather",
+        "score": 0.0,
+        "evidence": "Clear",
+        "impact_count": 0
+      },
+      {
+        "category": "Aircraft",
+        "score": 0.0,
+        "evidence": "All aircraft released",
+        "impact_count": 0
+      },
+      {
+        "category": "Crew",
+        "score": 0.0,
+        "evidence": "All crews ready",
+        "impact_count": 0
+      }
+    ]
+  },
+  "signal_breakdown": {
+    "weather": {
+      "score": 0.0,
+      "evidence": "Clear",
+      "impact_count": 0
+    },
+    "aircraft": {
+      "score": 0.0,
+      "evidence": "All aircraft released",
+      "impact_count": 0
+    },
+    "crew": {
+      "score": 0.0,
+      "evidence": "All crews ready",
+      "impact_count": 0
+    }
+  },
+  "rebooking_plan": {},
+  "finance_estimate": {},
+  "crew_rotation": {},
+  "simulation_results": []
+}

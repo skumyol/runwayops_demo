@@ -12,10 +12,11 @@ from typing import Any, Dict
 
 from fastapi import APIRouter, HTTPException, Query
 
-from ..agents.llm_factory import get_provider_info
-from ..config import settings
+from .._agents.llm_factory import get_provider_info
+from ..config import AGENTIC_ENGINES, settings
 from ..providers import ProviderMode, resolve_provider
 from ..services.agentic import agentic_service
+from ..services.scenario_overrides import apply_debug_scenario
 
 router = APIRouter(prefix="/api/agentic", tags=["agentic"])
 
@@ -26,6 +27,14 @@ async def analyze_disruption(
     carrier: str = Query("CX", description="Airline designator"),
     mode: ProviderMode | None = Query(
         None, description="Data source to use (defaults to FLIGHT_MONITOR_MODE)"
+    ),
+    scenario: str | None = Query(
+        None,
+        description="Optional debug scenario to apply (delay_3hr, crew_out, weather_groundstop)",
+    ),
+    engine: str | None = Query(
+        None,
+        description=f"Agentic engine to run ({', '.join(sorted(AGENTIC_ENGINES))})",
     ),
 ) -> Dict[str, Any]:
     """Run LangGraph agentic analysis on current flight data.
@@ -55,10 +64,15 @@ async def analyze_disruption(
             status_code=500,
             detail=f"Failed to fetch flight data: {str(exc)}"
         ) from exc
+
+    if scenario:
+        flight_data = apply_debug_scenario(flight_data, scenario)
     
     # Run agentic analysis
     try:
-        result = await agentic_service.analyze_disruption(flight_data)
+        result = await agentic_service.analyze_disruption(
+            flight_data, engine=engine
+        )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
@@ -72,11 +86,13 @@ async def analyze_disruption(
         "airport": airport.upper(),
         "carrier": carrier.upper(),
         "mode": selected_mode,
+        "engine": result.get("engine", settings.agentic_mode),
         "agentic_analysis": result,
         "original_data": {
             "stats": flight_data.get("stats"),
             "alerts": flight_data.get("alerts"),
-        }
+        },
+        "scenario": scenario,
     }
 
 
@@ -85,6 +101,10 @@ async def get_analysis_history(
     airport: str = Query("HKG", description="IATA code of the station"),
     carrier: str = Query("CX", description="Airline designator"),
     limit: int = Query(10, description="Number of records to return", ge=1, le=50),
+    engine: str | None = Query(
+        None,
+        description=f"Filter by agentic engine ({', '.join(sorted(AGENTIC_ENGINES))})",
+    ),
 ) -> Dict[str, Any]:
     """Retrieve historical agentic analyses for an airport/carrier.
     
@@ -102,7 +122,7 @@ async def get_analysis_history(
     
     try:
         analyses = await agentic_service.get_recent_analyses(
-            airport.upper(), carrier.upper(), limit
+            airport.upper(), carrier.upper(), limit, engine=engine
         )
     except Exception as exc:
         raise HTTPException(
@@ -123,6 +143,10 @@ async def get_simulation_history(
     airport: str = Query("HKG", description="IATA code of the station"),
     carrier: str = Query("CX", description="Airline designator"),
     limit: int = Query(10, description="Number of records to return", ge=1, le=50),
+    engine: str | None = Query(
+        None,
+        description=f"Filter by agentic engine ({', '.join(sorted(AGENTIC_ENGINES))})",
+    ),
 ) -> Dict[str, Any]:
     """Retrieve historical what-if simulation results.
     
@@ -139,7 +163,7 @@ async def get_simulation_history(
     
     try:
         simulations = await agentic_service.get_simulation_history(
-            airport.upper(), carrier.upper(), limit
+            airport.upper(), carrier.upper(), limit, engine=engine
         )
     except Exception as exc:
         raise HTTPException(
@@ -166,6 +190,8 @@ async def get_agentic_status() -> Dict[str, Any]:
     
     return {
         "enabled": settings.agentic_enabled,
+        "current_engine": settings.agentic_mode,
+        "available_engines": sorted(AGENTIC_ENGINES),
         "current_provider": provider_info["current_provider"],
         "current_model": provider_info["current_model"],
         "temperature": provider_info["temperature"],

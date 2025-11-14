@@ -10,7 +10,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
-from ..agents.llm_factory import LLMProviderError
+from .._agents.llm_factory import LLMProviderError
 from ..config import settings
 from ..services.agentic import agentic_service
 from ..services import reaccommodation as data_service
@@ -27,7 +27,11 @@ async def analyze_flight_with_agents(
     force_refresh: bool = Query(
         False, 
         description="Force new analysis even if cached result exists"
-    )
+    ),
+    engine: str | None = Query(
+        None,
+        description="Agent engine override (langgraph or apiv2)",
+    ),
 ) -> dict[str, Any]:
     """Run LangGraph multi-agent analysis on a specific flight disruption.
     
@@ -89,7 +93,9 @@ async def analyze_flight_with_agents(
     
     try:
         # Run LangGraph workflow through agentic service
-        result = await agentic_service.analyze_disruption(input_data)
+        result = await agentic_service.analyze_disruption(
+            input_data, engine=engine
+        )
         
         return {
             "flightNumber": flight_number,
@@ -98,6 +104,7 @@ async def analyze_flight_with_agents(
                 "provider": settings.llm_provider,
                 "model": settings.llm_model,
                 "timestamp": result.get("timestamp"),
+                "engine": result.get("engine", settings.agentic_mode),
             },
         }
     
@@ -117,6 +124,9 @@ async def analyze_flight_with_agents(
 async def get_ai_suggestions(
     flight_number: str,
     passenger_pnr: str | None = Query(None, description="Filter for specific passenger"),
+    engine: str | None = Query(
+        None, description="Agent engine override (langgraph or apiv2)"
+    ),
 ) -> dict[str, Any]:
     """Get AI-generated reaccommodation suggestions for a flight or passenger.
     
@@ -156,7 +166,9 @@ async def get_ai_suggestions(
     }
     
     try:
-        result = await agentic_service.analyze_disruption(input_data)
+        result = await agentic_service.analyze_disruption(
+            input_data, engine=engine
+        )
         final_plan = result.get("final_plan", {})
         
         # Extract actionable suggestions

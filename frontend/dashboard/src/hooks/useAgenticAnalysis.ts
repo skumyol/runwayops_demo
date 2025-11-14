@@ -1,117 +1,31 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { resolveApiBase } from '../lib/api';
-
-export interface AuditLogEntry {
-  agent: string;
-  input: any;
-  output: any;
-  timestamp: string;
-}
-
-export interface RiskAssessment {
-  risk_probability: number;
-  likelihood?: number;
-  duration_minutes?: number;
-  pax_impact?: string;
-  regulatory_risk?: string;
-  reasoning: string;
-  metrics?: {
-    total_flights: number;
-    delayed_flights: number;
-    critical_flights: number;
-    avg_delay_minutes: number;
-  };
-}
-
-export interface RebookingPlan {
-  strategy: string;
-  hotel_required: boolean;
-  vip_priority: boolean;
-  estimated_pax: number;
-  actions: string[];
-  reasoning: string;
-}
-
-export interface FinanceEstimate {
-  compensation_usd: number;
-  hotel_meals_usd: number;
-  operational_usd: number;
-  total_usd: number;
-  breakdown: string[];
-  reasoning: string;
-}
-
-export interface CrewRotation {
-  crew_changes_needed: boolean;
-  backup_crew_required: number;
-  regulatory_issues: string[];
-  actions: string[];
-  reasoning: string;
-}
-
-export interface WhatIfScenario {
-  scenario: string;
-  plan: {
-    description: string;
-    actions: string[];
-  };
-}
-
-export interface FinalPlan {
-  disruption_detected: boolean;
-  risk_assessment: RiskAssessment;
-  rebooking_plan: RebookingPlan;
-  finance_estimate: FinanceEstimate;
-  crew_rotation: CrewRotation;
-  what_if_scenarios: WhatIfScenario[];
-  recommended_action: string;
-  confidence: string;
-  priority?: string;
-  generated_at: string | null;
-}
-
-export interface AgenticAnalysisResult {
-  final_plan: FinalPlan;
-  audit_log: AuditLogEntry[];
-  disruption_detected: boolean;
-  risk_assessment: RiskAssessment;
-  rebooking_plan: RebookingPlan;
-  finance_estimate: FinanceEstimate;
-  crew_rotation: CrewRotation;
-  simulation_results: WhatIfScenario[];
-}
-
-export interface AgenticAnalysisResponse {
-  airport: string;
-  carrier: string;
-  mode: string;
-  agentic_analysis: AgenticAnalysisResult;
-  original_data: {
-    stats: any;
-    alerts: any[];
-  };
-}
-
-export interface AgenticStatus {
-  enabled: boolean;
-  llm_model: string;
-  llm_temperature: number;
-  api_key_configured: boolean;
-  mongo_configured: boolean;
-}
+import {
+  AgenticAnalysisResponse,
+  AgenticStatus,
+  AgenticEngine,
+} from '../types/agentic';
+import { MonitorMode } from './useFlightMonitor';
 
 interface UseAgenticAnalysisArgs {
   airport: string;
   carrier: string;
-  mode?: string;
+  mode?: MonitorMode | string;
   apiBaseOverride?: string;
+  engine?: AgenticEngine | string;
+  suspended?: boolean;
+  suspendedReason?: string;
+}
+
+export interface RunAnalysisOptions {
+  scenario?: string | null;
 }
 
 interface UseAgenticAnalysisResult {
   analysis: AgenticAnalysisResponse | null;
   loading: boolean;
   error: string | null;
-  runAnalysis: () => Promise<void>;
+  runAnalysis: (options?: RunAnalysisOptions) => Promise<void>;
   status: AgenticStatus | null;
   checkStatus: () => Promise<void>;
 }
@@ -121,13 +35,30 @@ export function useAgenticAnalysis({
   carrier,
   mode,
   apiBaseOverride,
+  engine,
+  suspended = false,
+  suspendedReason,
 }: UseAgenticAnalysisArgs): UseAgenticAnalysisResult {
   const [analysis, setAnalysis] = useState<AgenticAnalysisResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<AgenticStatus | null>(null);
 
+  useEffect(() => {
+    setAnalysis(null);
+    setError(null);
+    setStatus(null);
+  }, [apiBaseOverride, engine]);
+
   const checkStatus = useCallback(async () => {
+    if (suspended) {
+      setStatus(null);
+      setError(
+        suspendedReason ?? 'Agentic analysis is temporarily unavailable',
+      );
+      return;
+    }
+
     const base = resolveApiBase(apiBaseOverride);
     const url = `${base}/api/agentic/status`;
 
@@ -143,9 +74,18 @@ export function useAgenticAnalysis({
       const message = err instanceof Error ? err.message : 'Unable to check status';
       setError(message);
     }
-  }, [apiBaseOverride]);
+  }, [apiBaseOverride, suspended, suspendedReason]);
 
-  const runAnalysis = useCallback(async () => {
+  const runAnalysis = useCallback(async (options?: RunAnalysisOptions) => {
+    if (suspended) {
+      setAnalysis(null);
+      setError(
+        suspendedReason ?? 'Agentic analysis is temporarily unavailable',
+      );
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -156,6 +96,12 @@ export function useAgenticAnalysis({
     });
     if (mode) {
       params.append('mode', mode);
+    }
+    if (options?.scenario) {
+      params.append('scenario', options.scenario);
+    }
+    if (engine) {
+      params.append('engine', engine);
     }
     const url = `${base}/api/agentic/analyze?${params.toString()}`;
 
@@ -177,7 +123,7 @@ export function useAgenticAnalysis({
     } finally {
       setLoading(false);
     }
-  }, [airport, carrier, mode, apiBaseOverride]);
+  }, [airport, carrier, mode, apiBaseOverride, suspended, suspendedReason]);
 
   return {
     analysis,

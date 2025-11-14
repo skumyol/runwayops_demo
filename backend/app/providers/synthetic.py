@@ -6,13 +6,20 @@ from typing import Any, Dict, List, Tuple
 
 from .base import FlightMonitorProvider
 from .shared import HKT, STATUS_LABELS, iso_utc, seeded_rng, trend_series
+from ..services.disruption_updater import get_disruption_updater
 
 
 class SyntheticMonitorProvider(FlightMonitorProvider):
     mode = "synthetic"
 
     async def get_payload(self, airport: str, carrier: str) -> Dict[str, Any]:
-        return build_monitor_payload(airport, carrier)
+        payload = build_monitor_payload(airport, carrier)
+        
+        # Enhance payload with predictive signals that update disruptions
+        updater = get_disruption_updater()
+        updater.compute_and_store_signals(payload)
+        
+        return payload
 
 
 BASE_FLIGHTS: List[Dict[str, Any]] = [

@@ -53,19 +53,25 @@ export function useAgentOptions(): UseAgentOptionsResult {
         : `/api/agent-options/flights/${flightNumber}`;
 
       const result = await fetchJson<AgentOptionsResponse>(url);
-      setAgentOptions(result.options);
-      setAnalysisSummary(result.analysis_summary);
+      setAgentOptions(result.options || []);
+      setAnalysisSummary(result.analysis_summary || null);
 
       const duration = ((performance.now() - startTime) / 1000).toFixed(1);
       
       console.group('✅ AI Options Generated');
       console.log(`⏱️  Duration: ${duration}s`);
       console.log(`📊 Provider: ${result.provider}/${result.model}`);
-      console.log(`🎯 Options: ${result.options.length}`);
-      console.log(`⚠️  Disruption: ${result.analysis_summary.disruption_detected ? 'DETECTED' : 'None'}`);
-      console.log(`🛡️  Risk: ${result.analysis_summary.risk_level}`);
-      console.log(`✨ Action: ${result.analysis_summary.recommended_action}`);
-      console.log(`💯 Confidence: ${result.analysis_summary.confidence}`);
+      console.log(`🎯 Options: ${result.options?.length || 0}`);
+      
+      // Safely access analysis_summary with fallbacks
+      if (result.analysis_summary) {
+        console.log(`⚠️  Disruption: ${result.analysis_summary.disruption_detected ? 'DETECTED' : 'None'}`);
+        console.log(`🛡️  Risk: ${result.analysis_summary.risk_level || 'N/A'}`);
+        console.log(`✨ Action: ${result.analysis_summary.recommended_action || 'N/A'}`);
+        console.log(`💯 Confidence: ${result.analysis_summary.confidence || 'N/A'}`);
+      } else {
+        console.warn('⚠️  Analysis summary not provided by backend');
+      }
       console.table(result.options.map(opt => ({
         id: opt.id,
         route: opt.route,

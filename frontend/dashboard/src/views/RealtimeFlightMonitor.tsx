@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Activity, AlertTriangle, ArrowLeft, Bell, Bot, Clock, Info, Plane, Radar, RefreshCw, Users, UsersRound } from 'lucide-react';
+import { Activity, AlertTriangle, ArrowLeft, Bell, Bot, Clock, Info, Plane, Radar, RefreshCw, Users, UsersRound, TrendingUp } from 'lucide-react';
 
 import { TopNav } from '../components/TopNav';
 import { Badge } from '../components/ui/badge';
@@ -7,25 +7,28 @@ import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Progress } from '../components/ui/progress';
 import { Skeleton } from '../components/ui/skeleton';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
 import {
   FlightMonitorAlert,
   FlightMonitorFlight,
-  MonitorMode,
   StatusCategory,
   useFlightMonitor,
   CrewPanel,
   AircraftPanel,
+  MonitorMode,
 } from '../hooks/useFlightMonitor';
 import { useAgenticAnalysis } from '../hooks/useAgenticAnalysis';
 import { AgenticAnalysisPanel } from '../components/AgenticAnalysisPanel';
+import { useAgenticContext } from '../context/AgenticContext';
+import { describeAgenticEngine, resolveAgenticEngineBase } from '../lib/agentic';
+import { usePredictiveAlerts } from '../hooks/usePredictiveAlerts';
 
 const statusStyles: Record<StatusCategory, string> = {
   normal: 'border border-emerald-100 bg-emerald-50 text-emerald-700',
@@ -44,31 +47,30 @@ const formatRelativeTime = (iso: string | null) => {
   return `updated ${minutes} min ago`;
 };
 
-const airports = [{ label: 'Hong Kong (HKG)', value: 'HKG', disabled: false }];
-const carriers = [{ label: 'Cathay Pacific (CX)', value: 'CX', disabled: false }];
-const modeOptions: { label: string; value: MonitorMode; helper: string }[] = [
-  { label: 'Realtime (aviationstack)', value: 'realtime', helper: 'Live departures + heuristics' },
-  { label: 'Synthetic (playbook)', value: 'synthetic', helper: 'Deterministic CX scenario' },
-];
-
-const resolveInitialMode = (): MonitorMode => {
-  const envValue = (import.meta.env.VITE_DEFAULT_MONITOR_MODE as MonitorMode | undefined)?.toLowerCase();
-  return envValue === 'realtime' ? 'realtime' : 'synthetic';
-};
-
 type MonitorTab = 'flights' | 'crew' | 'aircraft' | 'agentic';
 
 export function RealtimeFlightMonitor() {
-  const [airport, setAirport] = useState('HKG');
-  const [carrier, setCarrier] = useState('CX');
-  const [sourceMode, setSourceMode] = useState<MonitorMode>(resolveInitialMode());
+  const {
+    latestAnalysis,
+    setLatestAnalysis,
+    agenticEngine,
+    monitorAirport,
+    monitorCarrier,
+    monitorMode,
+  } = useAgenticContext();
   const [selectedFlight, setSelectedFlight] = useState<FlightMonitorFlight | null>(null);
   const [alertFlight, setAlertFlight] = useState<FlightMonitorFlight | null>(null);
   const [activeTab, setActiveTab] = useState<MonitorTab>('flights');
+  const airport = monitorAirport;
+  const carrier = monitorCarrier;
+  const sourceMode = monitorMode;
 
   const { data, loading, error, refresh, lastUpdated, isRefreshing } = useFlightMonitor({ airport, carrier, mode: sourceMode });
   const effectiveMode = data?.mode ?? sourceMode;
   const sourceMismatch = data && data.mode !== sourceMode;
+
+  const agenticBaseOverride =
+    agenticEngine === 'apiv2' ? resolveAgenticEngineBase(agenticEngine) : undefined;
 
   // Agentic analysis integration
   const {
@@ -78,7 +80,36 @@ export function RealtimeFlightMonitor() {
     runAnalysis,
     status: agenticStatus,
     checkStatus,
-  } = useAgenticAnalysis({ airport, carrier, mode: sourceMode });
+  } = useAgenticAnalysis({
+    airport,
+    carrier,
+    mode: sourceMode,
+    engine: agenticEngine,
+    apiBaseOverride: agenticBaseOverride,
+  });
+
+  const activeAnalysis = agenticAnalysis ?? latestAnalysis;
+  const engineDescription = describeAgenticEngine(agenticEngine);
+  const enginePanelTitle =
+    agenticEngine === 'apiv2'
+      ? 'APIV2 Agentic Analysis'
+      : 'LangGraph Agentic Analysis';
+  const engineAvailable =
+    agenticStatus?.available_engines?.includes(agenticEngine) ?? true;
+  const agenticSuspended = !engineAvailable;
+  const agenticSuspendedReason = agenticSuspended
+    ? `Backend does not expose the ${agenticEngine.toUpperCase()} engine`
+    : undefined;
+  const agenticTabEnabled =
+    Boolean(agenticStatus?.enabled) || agenticEngine === 'apiv2';
+  const canRunAgentic =
+    !agenticSuspended && (agenticStatus?.enabled || agenticEngine === 'apiv2');
+
+  useEffect(() => {
+    if (agenticAnalysis) {
+      setLatestAnalysis(agenticAnalysis);
+    }
+  }, [agenticAnalysis, setLatestAnalysis]);
 
   // Check agentic status on mount
   useEffect(() => {
@@ -153,53 +184,26 @@ export function RealtimeFlightMonitor() {
         subtitle={subtitle}
         actions={
           <div className="flex flex-wrap items-center gap-4">
-            <Select value={airport} onValueChange={setAirport}>
-              <SelectTrigger className="w-[200px]"><SelectValue placeholder="Select airport" /></SelectTrigger>
-              <SelectContent>
-                {airports.map((item) => (
-                  <SelectItem key={item.value} value={item.value} disabled={item.disabled}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={carrier} onValueChange={setCarrier}>
-              <SelectTrigger className="w-[200px]"><SelectValue placeholder="Select carrier" /></SelectTrigger>
-              <SelectContent>
-                {carriers.map((item) => (
-                  <SelectItem key={item.value} value={item.value} disabled={item.disabled}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={sourceMode} onValueChange={(value) => setSourceMode(value as MonitorMode)}>
-              <SelectTrigger className="w-[220px]"><SelectValue placeholder="Select source" /></SelectTrigger>
-              <SelectContent>
-                {modeOptions.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    <div className="flex flex-col">
-                      <span>{item.label}</span>
-                      <span className="text-[11px] text-muted-foreground">{item.helper}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex flex-col text-xs text-white/80">
+              <span className="text-sm font-medium text-white">
+                {airport} · {carrier}
+              </span>
+              <span className="uppercase tracking-wide">
+                {sourceMode === 'realtime' ? 'Realtime feed' : 'Synthetic scenario'}
+              </span>
+            </div>
 
             <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing || loading}>
               <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
               {isRefreshing ? 'Refreshing' : 'Refresh'}
             </Button>
 
-            {agenticStatus?.enabled && (
+            {(agenticStatus?.enabled || agenticEngine === 'apiv2') && (
               <Button
                 variant="default"
                 size="sm"
-                onClick={runAnalysis}
-                disabled={agenticLoading || !data}
+                onClick={() => runAnalysis()}
+                disabled={agenticLoading || !data || agenticSuspended}
                 className="bg-indigo-600 hover:bg-indigo-700"
               >
                 <Bot className={`w-4 h-4 mr-2 ${agenticLoading ? 'animate-pulse' : ''}`} />
@@ -207,7 +211,17 @@ export function RealtimeFlightMonitor() {
               </Button>
             )}
 
-            <AlertsDropdown alerts={data?.alerts ?? []} />
+            <AlertsDropdown
+              alerts={data?.alerts ?? []}
+              onSelectAlert={(flightNumber) => {
+                const matchingFlight = data?.flights.find(
+                  (flight) => flight.flightNumber === flightNumber
+                );
+                if (matchingFlight) {
+                  setAlertFlight(matchingFlight);
+                }
+              }}
+            />
 
             {data && (
               <div className="flex items-center gap-2">
@@ -279,12 +293,12 @@ export function RealtimeFlightMonitor() {
                   <Plane className="w-4 h-4" />
                   Aircraft ({data.aircraftPanels.length})
                 </TabsTrigger>
-                {agenticStatus?.enabled && (
-                  <TabsTrigger value="agentic" className="flex items-center gap-2">
-                    <Bot className="w-4 h-4" />
-                    AI Analysis {agenticAnalysis && '✓'}
-                  </TabsTrigger>
-                )}
+                {agenticTabEnabled && (
+                <TabsTrigger value="agentic" className="flex items-center gap-2">
+                  <Bot className="w-4 h-4" />
+                  AI Analysis {activeAnalysis && '✓'}
+                </TabsTrigger>
+              )}
               </TabsList>
 
               <TabsContent value="flights" className="space-y-6">
@@ -308,8 +322,29 @@ export function RealtimeFlightMonitor() {
                 <AircraftGrid aircraft={data.aircraftPanels} note={data.aircraftPanelsNote} />
               </TabsContent>
 
-              {agenticStatus?.enabled && (
+              {agenticTabEnabled && (
                 <TabsContent value="agentic" className="space-y-6">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <Badge variant="outline" className="w-fit">
+                      {engineDescription}
+                    </Badge>
+                    {agenticStatus?.llm_temperature !== undefined && (
+                      <span className="text-xs text-muted-foreground">
+                        Temp: {agenticStatus.llm_temperature}
+                      </span>
+                    )}
+                  </div>
+
+                  {agenticSuspended && (
+                    <Card className="border-amber-200 bg-amber-50/80 p-4 flex items-center gap-3">
+                      <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
+                      <div className="text-sm text-muted-foreground">
+                        APIV2 is selected, but <code className="font-mono">VITE_AGENTIC_APIV2_BASE</code> is not set.
+                        Point it to your google_a2a_agents_apiV2 service to enable the Gemini + Amadeus workflow.
+                      </div>
+                    </Card>
+                  )}
+
                   {agenticError && (
                     <Card className="border-destructive/40 bg-destructive/5 p-6 flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -319,7 +354,7 @@ export function RealtimeFlightMonitor() {
                           <p className="text-[14px] text-muted-foreground">{agenticError}</p>
                         </div>
                       </div>
-                      <Button variant="outline" onClick={runAnalysis} size="sm">Retry</Button>
+                      <Button variant="outline" onClick={() => runAnalysis()} size="sm">Retry</Button>
                     </Card>
                   )}
                   
@@ -328,7 +363,11 @@ export function RealtimeFlightMonitor() {
                       <div className="flex flex-col items-center justify-center space-y-4">
                         <Bot className="w-12 h-12 text-indigo-600 animate-pulse" />
                         <p className="text-lg font-semibold">Running Multi-Agent Analysis...</p>
-                        <p className="text-sm text-muted-foreground">LangGraph workflow executing (predictive → orchestrator → sub-agents → aggregator)</p>
+                        <p className="text-sm text-muted-foreground">
+                          {agenticEngine === 'apiv2'
+                            ? 'APIV2 workflow executing via Google A2A Agents (predictive → orchestrator → ADK tools)'
+                            : 'LangGraph workflow executing (predictive → orchestrator → sub-agents → aggregator)'}
+                        </p>
                       </div>
                     </Card>
                   )}
@@ -336,18 +375,24 @@ export function RealtimeFlightMonitor() {
                   {!agenticLoading && !agenticAnalysis && !agenticError && (
                     <Card className="p-8 text-center">
                       <Bot className="w-16 h-16 text-indigo-600 mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold mb-2">LangGraph Agentic Analysis</h3>
+                      <h3 className="text-xl font-semibold mb-2">{enginePanelTitle}</h3>
                       <p className="text-muted-foreground mb-6">
-                        Run AI-powered multi-agent disruption analysis with what-if scenarios, transparent reasoning, and actionable recommendations.
+                        {agenticEngine === 'apiv2'
+                          ? 'Route the payload into google_a2a_agents_apiV2 for Gemini-orchestrated plans (Amadeus, crew legality, finance).'
+                          : 'Run the LangGraph stack locally for fast what-if simulations and regression-safe plans.'}
                       </p>
-                      <Button onClick={runAnalysis} className="bg-indigo-600 hover:bg-indigo-700">
+                      <Button
+                        onClick={() => runAnalysis()}
+                        disabled={!canRunAgentic}
+                        className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60"
+                      >
                         <Bot className="w-4 h-4 mr-2" />
-                        Run Analysis
+                        {canRunAgentic ? 'Run Analysis' : 'Configure Runtime'}
                       </Button>
                     </Card>
                   )}
                   
-                  {agenticAnalysis && <AgenticAnalysisPanel analysis={agenticAnalysis} />}
+                  {activeAnalysis && <AgenticAnalysisPanel analysis={activeAnalysis} />}
                 </TabsContent>
               )}
             </Tabs>
@@ -357,6 +402,9 @@ export function RealtimeFlightMonitor() {
 
       <FlightAlertsModal
         flight={alertFlight}
+        airport={airport}
+        carrier={carrier}
+        mode={sourceMode}
         onOpenChange={(open) => {
           if (!open) {
             setAlertFlight(null);
@@ -671,7 +719,13 @@ function StatusDot({ ready, label }: { ready: boolean; label: string }) {
   );
 }
 
-function AlertsDropdown({ alerts }: { alerts: FlightMonitorAlert[] }) {
+function AlertsDropdown({
+  alerts,
+  onSelectAlert,
+}: {
+  alerts: FlightMonitorAlert[];
+  onSelectAlert?: (flightNumber: string) => void;
+}) {
   const count = alerts.length;
   return (
     <DropdownMenu>
@@ -693,19 +747,28 @@ function AlertsDropdown({ alerts }: { alerts: FlightMonitorAlert[] }) {
             <div className="p-4 text-sm text-muted-foreground">No high-severity alerts.</div>
           ) : (
             alerts.map((alert) => (
-              <div key={`${alert.flightNumber}-${alert.message}`} className="p-4 border-b last:border-b-0">
-                <div className="flex items-center justify-between">
+              <DropdownMenuItem
+                key={`${alert.flightNumber}-${alert.message}`}
+                className="flex flex-col items-start gap-1 rounded-none border-b px-4 py-3 text-left last:border-b-0 focus:bg-slate-50"
+                onSelect={() => onSelectAlert?.(alert.flightNumber)}
+              >
+                <div className="flex w-full items-center justify-between">
                   <div>
                     <p className="text-sm font-semibold">{alert.flightNumber}</p>
-                    <p className="text-xs text-muted-foreground">Gate {alert.gate} · +{alert.delayMinutes}m</p>
+                    <p className="text-xs text-muted-foreground">
+                      Gate {alert.gate} · +{alert.delayMinutes}m
+                    </p>
                   </div>
                   <Badge variant="secondary" className="text-xs">
                     {alert.paxImpacted} pax
                   </Badge>
                 </div>
-                <p className="text-sm mt-2">{alert.message}</p>
-                <p className="text-xs text-muted-foreground mt-1">Next: {alert.recommendedAction}</p>
-              </div>
+                <p className="text-sm">{alert.message}</p>
+                <p className="text-xs text-muted-foreground">Next: {alert.recommendedAction}</p>
+                <p className="text-[11px] uppercase text-muted-foreground tracking-wide">
+                  Tap to view predictive insights
+                </p>
+              </DropdownMenuItem>
             ))
           )}
         </div>
@@ -838,30 +901,153 @@ function FlightDetailPage({
 
 function FlightAlertsModal({
   flight,
+  airport,
+  carrier,
+  mode,
   onOpenChange,
 }: {
   flight: FlightMonitorFlight | null;
+  airport: string;
+  carrier: string;
+  mode: MonitorMode;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { alertData, loading, fetchAlerts } = usePredictiveAlerts();
+
+  // Fetch predictive alerts when flight changes
+  useEffect(() => {
+    if (flight?.flightNumber) {
+      fetchAlerts(flight.flightNumber, airport, carrier, mode);
+    }
+  }, [airport, carrier, mode, flight?.flightNumber, fetchAlerts]);
+
+  const hasPredictiveAlert = alertData?.hasPredictiveAlert && alertData?.alert;
+
   return (
     <Dialog open={Boolean(flight)} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Alerts — {flight?.flightNumber}</DialogTitle>
           <DialogDescription>
             {flight
-              ? `Review the latest status, passenger impact, and recommended actions for ${flight.flightNumber}.`
+              ? `Review operational status, predictive insights, and recommended actions for ${flight.flightNumber}.`
               : 'Select a flight with alerts to review passenger impact and recommended actions.'}
           </DialogDescription>
         </DialogHeader>
         {flight ? (
-          <div className="space-y-3 text-sm">
+          <div className="space-y-4 text-sm">
+            {/* Operational Status */}
             <Card className={`p-4 ${statusStyles[flight.statusCategory]}`}>
               <p className="font-semibold mb-1">{flight.status}</p>
               <p className="text-xs text-muted-foreground">Gate {flight.gate} · {flight.paxImpacted} pax impacted</p>
             </Card>
+
+            {/* Predictive Signals Section */}
+            {loading && (
+              <Card className="p-4 border-indigo-100 bg-indigo-50/50">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 animate-pulse text-indigo-600" />
+                  <p className="text-sm text-indigo-900">Loading predictive insights...</p>
+                </div>
+              </Card>
+            )}
+
+            {hasPredictiveAlert && alertData.alert && (
+              <Card className="p-4 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-indigo-600" />
+                    <h4 className="font-semibold text-indigo-900">Predictive Signals</h4>
+                  </div>
+                  <Badge 
+                    variant={
+                      alertData.alert.severity === 'high' 
+                        ? 'destructive' 
+                        : alertData.alert.severity === 'medium'
+                        ? 'default'
+                        : 'secondary'
+                    }
+                    className="text-xs"
+                  >
+                    {alertData.alert.severity.toUpperCase()} RISK
+                  </Badge>
+                </div>
+
+                {(alertData.alert.prediction || alertData.alert.reasoning) && (
+                  <div className="mb-4 rounded-lg border border-indigo-100 bg-white/70 p-3">
+                    <div className="flex items-start gap-3">
+                      <Bot className="w-5 h-5 text-indigo-600 mt-0.5" />
+                      <div>
+                        <p className="text-xs uppercase text-muted-foreground">Predictive agent</p>
+                        <p className="text-sm font-semibold text-indigo-900">
+                          {alertData.alert.prediction || 'Predictive agent context unavailable'}
+                        </p>
+                        {alertData.alert.reasoning && (
+                          <p className="text-sm text-slate-600 mt-1">
+                            {alertData.alert.reasoning}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Risk Probability */}
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-muted-foreground">Disruption Probability</span>
+                    <span className="text-sm font-semibold">
+                      {Math.round(alertData.alert.riskProbability * 100)}%
+                    </span>
+                  </div>
+                  <Progress value={alertData.alert.riskProbability * 100} className="h-2" />
+                </div>
+
+                {/* Risk Drivers */}
+                <div className="mb-4">
+                  <p className="text-xs uppercase text-muted-foreground mb-2">Risk Drivers</p>
+                  <div className="space-y-2">
+                    {alertData.alert.drivers.map((driver, idx) => (
+                      <div key={idx} className="flex items-start gap-2 text-xs">
+                        <div className="flex-shrink-0 w-16">
+                          <Badge variant="outline" className="text-[10px]">
+                            {driver.category}
+                          </Badge>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-muted-foreground">{driver.evidence}</p>
+                          <Progress 
+                            value={driver.score * 100} 
+                            className="h-1 mt-1" 
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* AI Recommendations */}
+                <div>
+                  <p className="text-xs uppercase text-muted-foreground mb-2">AI Recommendations</p>
+                  <ul className="space-y-1.5">
+                    {alertData.alert.recommendations.map((rec, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <span className="text-indigo-600 mt-0.5">•</span>
+                        <span className="text-sm">{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <p className="text-[10px] text-muted-foreground mt-3">
+                  Generated {new Date(alertData.alert.timestamp).toLocaleTimeString()}
+                </p>
+              </Card>
+            )}
+
+            {/* Standard Operational Actions */}
             <div>
-              <p className="text-xs uppercase text-muted-foreground mb-1">Next actions</p>
+              <p className="text-xs uppercase text-muted-foreground mb-2">Operational Actions</p>
               <ul className="list-disc pl-5 space-y-1">
                 {flight.irregularOps.actions.map((action) => (
                   <li key={action}>{action}</li>

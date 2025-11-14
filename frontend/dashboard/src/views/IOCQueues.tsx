@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { TopNav } from '../components/TopNav';
 import { FilterBar, Filter } from '../components/FilterBar';
 import { MetricCard } from '../components/MetricCard';
@@ -12,7 +12,10 @@ import { Users, Clock, DollarSign, TrendingUp, AlertCircle, ChevronRight, Refres
 import { TierType } from '../types/reaccommodation';
 import { Skeleton } from '../components/ui/skeleton';
 import { useReaccommodationFlights } from '../hooks/useReaccommodation';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
+import { useAgenticAnalysis } from '../hooks/useAgenticAnalysis';
+import { useAgenticContext } from '../context/AgenticContext';
+import { describeAgenticEngine, resolveAgenticEngineBase } from '../lib/agentic';
 
 interface IOCQueuesProps {
   onNavigateToCohort?: (flightNumber: string) => void;
@@ -23,6 +26,149 @@ export function IOCQueues({ onNavigateToCohort }: IOCQueuesProps) {
   const [protectPremium, setProtectPremium] = useState(true);
   const [selectedFlights, setSelectedFlights] = useState<string[]>([]);
   const { flights, loading, error, refresh } = useReaccommodationFlights();
+  const { latestAnalysis, setLatestAnalysis, agenticEngine } = useAgenticContext();
+  const agenticBaseOverride =
+    agenticEngine === 'apiv2' ? resolveAgenticEngineBase(agenticEngine) : undefined;
+  const agenticHook = useAgenticAnalysis({
+    airport: station,
+    carrier: 'CX',
+    mode: 'synthetic',
+    engine: agenticEngine,
+    apiBaseOverride: agenticBaseOverride,
+  });
+  const activeAgentic = agenticHook.analysis ?? latestAnalysis;
+  const engineDescription = describeAgenticEngine(agenticEngine);
+  const engineAvailable =
+    agenticHook.status?.available_engines?.includes(agenticEngine) ?? true;
+  const agenticSuspended = !engineAvailable;
+  const agenticSuspendedReason = agenticSuspended
+    ? `Backend does not expose the ${agenticEngine.toUpperCase()} engine`
+    : undefined;
+  const canRunAgentic = !agenticSuspended;
+
+  useEffect(() => {
+    if (agenticHook.analysis) {
+      setLatestAnalysis(agenticHook.analysis);
+    }
+  }, [agenticHook.analysis, setLatestAnalysis]);
+
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
+
+  const renderAgenticSection = () => {
+    if (agenticSuspended) {
+      return (
+        <Card className="p-6 border-amber-200 bg-amber-50/70 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-amber-600" />
+          <div className="text-sm text-muted-foreground">
+            {agenticSuspendedReason ??
+              'Selected agent engine is not available on the backend. Switch engines or update the backend config.'}
+          </div>
+        </Card>
+      );
+    }
+
+    if (!activeAgentic) {
+      return (
+        <Card className="p-6 border-dashed border-indigo-200 bg-indigo-50/60">
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-indigo-800">
+              Run the {engineDescription} pipeline to surface finance and re-accommodation guidance directly inside IOC.
+            </p>
+            <Button
+              onClick={() => agenticHook.runAnalysis()}
+              disabled={agenticHook.loading || !canRunAgentic}
+              className="self-start bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60"
+            >
+              {agenticHook.loading ? 'Running...' : 'Run AI analysis'}
+            </Button>
+          </div>
+        </Card>
+      );
+    }
+
+    const plan = activeAgentic.agentic_analysis?.final_plan;
+
+    if (!plan) {
+      return (
+        <Card className="p-6 border border-amber-200 bg-amber-50/60 flex flex-col gap-3">
+          <div className="text-sm text-amber-900">
+            Agentic response did not include a final plan payload. Re-run the pipeline to regenerate finance
+            and re-accommodation guidance.
+          </div>
+          <Button
+            onClick={() => agenticHook.runAnalysis()}
+            disabled={agenticHook.loading || !canRunAgentic}
+            variant="outline"
+            className="self-start"
+          >
+            {agenticHook.loading ? 'Running...' : 'Re-run analysis'}
+          </Button>
+        </Card>
+      );
+    }
+
+    const finance = plan.finance_estimate;
+    const rebooking = plan.rebooking_plan;
+    const financeBreakdown = finance?.breakdown ?? [];
+    const rebookingActions = rebooking?.actions ?? [];
+
+    return (
+      <div className="space-y-3">
+        <Badge variant="outline" className="w-fit">{engineDescription}</Badge>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card className="p-5 border border-emerald-100 bg-white">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-xs uppercase text-emerald-600 font-semibold">Finance Impact</p>
+                <h3 className="text-xl font-semibold">
+                  {typeof finance?.total_usd === 'number' ? formatCurrency(finance.total_usd) : 'Est. unavailable'}
+                </h3>
+              </div>
+              <Badge variant="outline" className="text-xs">{plan.priority?.toUpperCase() ?? 'MEDIUM'}</Badge>
+            </div>
+            <p className="text-sm text-muted-foreground mb-3">
+              {finance?.reasoning ?? 'Finance estimate not provided by the agentic workflow.'}
+            </p>
+            {financeBreakdown.length > 0 ? (
+              <ul className="text-sm text-gray-700 space-y-1">
+                {financeBreakdown.map((item) => (
+                  <li key={item}>• {item}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-xs text-muted-foreground">No cost breakdown supplied.</p>
+            )}
+          </Card>
+          <Card className="p-5 border border-blue-100 bg-white">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-xs uppercase text-blue-600 font-semibold">Re-accommodation</p>
+                <h3 className="text-xl font-semibold">
+                  {(rebooking?.strategy ?? 'No strategy').replace(/_/g, ' ')}
+                </h3>
+              </div>
+              <Badge variant="secondary" className="text-xs">
+                {typeof rebooking?.estimated_pax === 'number' ? `${rebooking.estimated_pax} pax` : 'N/A'}
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground mb-3">
+              {rebooking?.reasoning ?? 'Re-accommodation guidance unavailable.'}
+            </p>
+            {rebookingActions.length > 0 ? (
+              <ul className="text-sm text-gray-700 space-y-1">
+                {rebookingActions.slice(0, 4).map((action) => (
+                  <li key={action}>• {action}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-xs text-muted-foreground">No actionable steps returned.</p>
+            )}
+          </Card>
+        </div>
+      </div>
+    );
+  };
   const activeFlightNumbers = useMemo(() => new Set(flights.map((flight) => flight.flightNumber)), [flights]);
   const metrics = useMemo(() => {
     if (!flights.length) {
@@ -113,17 +259,15 @@ export function IOCQueues({ onNavigateToCohort }: IOCQueuesProps) {
         title="IROP Recovery Dashboard" 
         subtitle="Integrated Operations Center"
         actions={
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Switch 
-                id="protect-premium" 
-                checked={protectPremium}
-                onCheckedChange={setProtectPremium}
-              />
-              <Label htmlFor="protect-premium" className="text-[14px] cursor-pointer">
-                Protect premium inventory
-              </Label>
-            </div>
+          <div className="flex items-center gap-2">
+            <Switch 
+              id="protect-premium" 
+              checked={protectPremium}
+              onCheckedChange={setProtectPremium}
+            />
+            <Label htmlFor="protect-premium" className="text-[14px] cursor-pointer">
+              Protect premium inventory
+            </Label>
           </div>
         }
       />
@@ -131,6 +275,23 @@ export function IOCQueues({ onNavigateToCohort }: IOCQueuesProps) {
       <FilterBar filters={filters} />
 
       <div className="p-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-[18px] leading-[24px] font-semibold">AI Finance & Rebooking</h2>
+          <div className="flex items-center gap-3">
+            {agenticHook.error && <span className="text-sm text-destructive">{agenticHook.error}</span>}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => agenticHook.runAnalysis()}
+              disabled={agenticHook.loading || !canRunAgentic}
+            >
+              {agenticHook.loading ? 'Running...' : 'Refresh AI plan'}
+            </Button>
+          </div>
+        </div>
+
+        {renderAgenticSection()}
+
         <div className="grid grid-cols-4 gap-6 mb-8">
           {metrics.map((metric) => (
             <MetricCard
@@ -285,7 +446,7 @@ export function IOCQueues({ onNavigateToCohort }: IOCQueuesProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={(e) => {
+                  onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
                     onNavigateToCohort?.(flight.flightNumber);
                   }}

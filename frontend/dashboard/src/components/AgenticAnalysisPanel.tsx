@@ -1,5 +1,5 @@
 import { AlertCircle, Bot, CheckCircle, Clock, DollarSign, Users, XCircle } from 'lucide-react';
-import { AgenticAnalysisResponse } from '../hooks/useAgenticAnalysis';
+import { AgenticAnalysisResponse } from '../types/agentic';
 
 interface AgenticAnalysisPanelProps {
   analysis: AgenticAnalysisResponse;
@@ -152,6 +152,21 @@ export function AgenticAnalysisPanel({ analysis }: AgenticAnalysisPanelProps) {
           </p>
         </div>
       </div>
+
+      {final_plan.signal_breakdown && (
+        <div className="border border-indigo-100 rounded-lg p-4 bg-indigo-50/60">
+          <h3 className="font-semibold text-indigo-900 mb-3 text-sm">Signal drivers</h3>
+          <div className="grid gap-3 md:grid-cols-3">
+            {Object.entries(final_plan.signal_breakdown).map(([key, value]) => (
+              <div key={key} className="bg-white border border-indigo-100 rounded-lg p-3">
+                <p className="text-xs uppercase font-semibold text-indigo-500">{key}</p>
+                <p className="text-lg font-bold text-gray-900">{Math.round((value?.score ?? 0) * 100)}%</p>
+                <p className="text-xs text-gray-600 mt-1">{value?.evidence}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* What-If Scenarios */}
       {final_plan.what_if_scenarios && final_plan.what_if_scenarios.length > 0 && (

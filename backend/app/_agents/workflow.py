@@ -5,9 +5,12 @@ This module builds the stateful graph that orchestrates all agents.
 
 from __future__ import annotations
 
+import logging
 from typing import Any, Dict
 
 from langgraph.graph import END, StateGraph
+
+logger = logging.getLogger(__name__)
 
 from .nodes import (
     aggregator_node,
@@ -105,6 +108,7 @@ class DisruptionWorkflow:
             "input_data": flight_data,
             "disruption_detected": False,
             "risk_assessment": {},
+            "signal_breakdown": {},
             "rebooking_plan": {},
             "finance_estimate": {},
             "crew_rotation": {},
@@ -121,6 +125,7 @@ class DisruptionWorkflow:
             "audit_log": result.get("audit_log", []),
             "disruption_detected": result.get("disruption_detected", False),
             "risk_assessment": result.get("risk_assessment", {}),
+            "signal_breakdown": result.get("signal_breakdown", {}),
             "rebooking_plan": result.get("rebooking_plan", {}),
             "finance_estimate": result.get("finance_estimate", {}),
             "crew_rotation": result.get("crew_rotation", {}),
@@ -140,6 +145,7 @@ class DisruptionWorkflow:
             "input_data": flight_data,
             "disruption_detected": False,
             "risk_assessment": {},
+            "signal_breakdown": {},
             "rebooking_plan": {},
             "finance_estimate": {},
             "crew_rotation": {},
@@ -155,6 +161,7 @@ class DisruptionWorkflow:
             "audit_log": result.get("audit_log", []),
             "disruption_detected": result.get("disruption_detected", False),
             "risk_assessment": result.get("risk_assessment", {}),
+            "signal_breakdown": result.get("signal_breakdown", {}),
             "rebooking_plan": result.get("rebooking_plan", {}),
             "finance_estimate": result.get("finance_estimate", {}),
             "crew_rotation": result.get("crew_rotation", {}),

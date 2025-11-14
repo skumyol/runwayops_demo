@@ -17,6 +17,7 @@ class AgentState(TypedDict):
     # Detection & assessment
     disruption_detected: bool
     risk_assessment: Dict[str, Any]
+    signal_breakdown: Dict[str, Any]
     
     # Agent outputs
     rebooking_plan: Dict[str, Any]

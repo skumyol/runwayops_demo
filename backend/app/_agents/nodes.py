@@ -15,6 +15,7 @@ from langchain_core.messages import HumanMessage
 
 from .llm_factory import get_llm
 from .state import AgentState, log_reasoning
+from ..services.predictive_signals import compute_predictive_signals
 from .agent_logger import (
     log_agent_start, log_agent_thinking, log_agent_llm_call,
     log_agent_llm_response, log_agent_decision, log_agent_output,
@@ -31,60 +32,32 @@ logger.setLevel(logging.INFO)
 # -----------------------------
 
 def predictive_node(state: AgentState) -> AgentState:
-    """Mock ML node that analyzes data stream for disruption signals.
-    
-    In production, replace with actual LSTM model predictions.
-    Currently uses heuristics based on delay and status.
-    """
+    """Predictive node that surfaces weather/crew/aircraft driven risk."""
     logger.info("=" * 80)
     logger.info("🧠 PREDICTIVE AGENT: Starting disruption analysis...")
     logger.info("=" * 80)
-    
+
     input_data = state["input_data"]
-    
-    # Extract signals from flight data
-    flights = input_data.get("flights", [])
-    stats = input_data.get("stats", {})
-    
-    logger.info(f"📊 Input Data: {len(flights)} flights, Stats: {stats}")
-    
-    # Calculate risk probability based on delays and critical flights
-    delayed = stats.get("delayed", 0)
-    critical = stats.get("critical", 0)
-    total = stats.get("totalFlights", 1)
-    avg_delay = stats.get("avgDelayMinutes", 0)
-    
-    logger.info(f"📈 Analysis: Total={total}, Delayed={delayed}, Critical={critical}, AvgDelay={avg_delay}min")
-    
-    # Heuristic risk score (replace with ML model)
-    risk_prob = min(0.95, (critical / total) * 0.5 + (delayed / total) * 0.3 + (avg_delay / 100) * 0.2)
-    detected = risk_prob > 0.7 or critical > 0
-    
-    logger.info(f"🎯 Risk Probability: {risk_prob:.2%} (threshold: 70%)")
-    logger.info(f"⚠️  Disruption {'DETECTED ✓' if detected else 'NOT DETECTED ✗'}")
-    
-    reasoning = (
-        f"Analyzed {total} flights: {delayed} delayed, {critical} critical. "
-        f"Avg delay: {avg_delay}min. Calculated risk probability: {risk_prob:.2f}. "
-        f"Disruption {'DETECTED' if detected else 'not detected'} (threshold: 0.70)."
+
+    result = compute_predictive_signals(input_data)
+
+    logger.info(
+        "🎯 Risk Probability: %.2f%% | Weather=%s | Aircraft=%s | Crew=%s",
+        result["risk_probability"] * 100,
+        result["signal_breakdown"]["weather"],
+        result["signal_breakdown"]["aircraft"],
+        result["signal_breakdown"]["crew"],
     )
-    
-    result = {
-        "disruption_detected": detected,
-        "risk_probability": risk_prob,
-        "reasoning": reasoning,
-        "metrics": {
-            "total_flights": total,
-            "delayed_flights": delayed,
-            "critical_flights": critical,
-            "avg_delay_minutes": avg_delay,
-        }
-    }
-    
+    logger.info(
+        "⚠️  Disruption %s",
+        "DETECTED ✓" if result["disruption_detected"] else "NOT DETECTED ✗",
+    )
+
     state = log_reasoning(state, "Predictive", input_data, result)
-    state["disruption_detected"] = detected
+    state["disruption_detected"] = result["disruption_detected"]
     state["risk_assessment"] = result
-    
+    state["signal_breakdown"] = result.get("signal_breakdown", {})
+
     return state
 
 
@@ -148,6 +121,7 @@ Output a JSON with:
     
     log_agent_llm_call("ORCHESTRATOR", "Requesting action plan and what-if scenarios", llm.model_name if hasattr(llm, 'model_name') else "LLM")
     
+    response = None
     try:
         response = llm.invoke([HumanMessage(content=prompt)])
         content = response.content
@@ -178,7 +152,7 @@ Output a JSON with:
             },
             "what_if_scenarios": [],
             "reasoning": f"LLM response parsing failed: {e}",
-            "raw_response": str(response.content)[:500]
+            "raw_response": str(getattr(response, "content", ""))[:500],
         }
     
     state = log_reasoning(state, "Orchestrator", input_summary, output)
@@ -414,6 +388,7 @@ def aggregator_node(state: AgentState) -> AgentState:
     final_plan = {
         "disruption_detected": state["disruption_detected"],
         "risk_assessment": state["risk_assessment"],
+        "signal_breakdown": state.get("signal_breakdown", {}),
         "rebooking_plan": state["rebooking_plan"],
         "finance_estimate": state["finance_estimate"],
         "crew_rotation": state["crew_rotation"],

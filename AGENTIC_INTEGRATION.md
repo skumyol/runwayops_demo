@@ -77,6 +77,7 @@ Required configuration in `backend/.env`:
 ```bash
 # Enable agentic system
 AGENTIC_ENABLED=true
+AGENTIC_MODE=apiv2  # langgraph|apiv2
 
 # Choose LLM provider (openai, openrouter, deepseek, gemini)
 LLM_PROVIDER=openai
@@ -136,6 +137,8 @@ POST /api/agentic/analyze?airport=HKG&carrier=CX&mode=synthetic
 ```
 
 Executes the full LangGraph workflow on current flight data.
+
+**Engine toggle**: add `engine=apiv2` (default) or `engine=langgraph` to switch between the Google A2A-inspired stack and the legacy LangGraph graph without changing URLs.
 
 **Response:**
 ```json
@@ -379,6 +382,16 @@ AVIATIONSTACK_API_KEY=your-key
 ```
 
 Workflow will analyze live flight data from aviationstack API.
+
+### Command Line Debugging
+
+Use the dedicated script when you only want to exercise the agents without the API or frontend:
+
+```bash
+python scripts/debug_agents.py --airport HKG --carrier CX --mode synthetic --scenario delay_3hr --audit --json
+```
+
+This pulls a provider payload, applies the optional scenario overrides, runs the LangGraph workflow, and prints a human-readable summary (plus full audit log / JSON when requested). Useful for iterating on prompts or verifying multi-agent reasoning directly in the terminal.
 
 ## Production Considerations
 

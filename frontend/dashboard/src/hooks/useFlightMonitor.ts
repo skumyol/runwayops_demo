@@ -69,6 +69,27 @@ export interface FlightMonitorTrend {
   loadFactor: number[];
 }
 
+export interface PredictiveDriver {
+  category: string;
+  score: number;
+  evidence: string;
+  impact_count: number;
+}
+
+export interface PredictiveSignals {
+  disruption_detected: boolean;
+  risk_probability: number;
+  reasoning: string;
+  metrics?: {
+    total_flights: number;
+    delayed_flights: number;
+    critical_flights: number;
+    avg_delay_minutes: number;
+  };
+  signal_breakdown?: Record<string, { score: number; evidence: string; impact_count: number }>;
+  drivers?: PredictiveDriver[];
+}
+
 export type MonitorMode = 'synthetic' | 'realtime';
 
 export interface CrewPanel {
@@ -124,6 +145,7 @@ export interface FlightMonitorPayload {
   crewPanelsNote?: string | null;
   aircraftPanelsNote?: string | null;
   fallbackReason?: string;
+  predictiveSignals?: PredictiveSignals | null;
 }
 
 interface UseFlightMonitorArgs {

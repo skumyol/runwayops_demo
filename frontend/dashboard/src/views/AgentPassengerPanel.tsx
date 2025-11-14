@@ -6,8 +6,8 @@ import { OptionCard } from '../components/OptionCard';
 import { PolicyCallout } from '../components/PolicyCallout';
 import { Badge } from '../components/ui/badge';
 import { Separator } from '../components/ui/separator';
-import { User, Phone, Mail, Plane, Clock, MapPin, DollarSign, RefreshCw, Users, Bot, Sparkles, FileText, X, Zap } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import { User, Phone, Mail, Plane, Clock, MapPin, DollarSign, RefreshCw, Users, Bot, Sparkles, FileText, X, Zap, Radar } from 'lucide-react';
+import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Skeleton } from '../components/ui/skeleton';
 import { usePassengerDetail, useReaccommodationFlights, useFlightManifest } from '../hooks/useReaccommodation';
@@ -80,6 +80,7 @@ export function AgentPassengerPanel() {
   };
 
   const noData = !loading && (!flights.length || !passenger);
+  const noFlights = !loading && !flights.length;
 
   return (
     <div className="min-h-screen bg-[#EBEDEC]">
@@ -96,6 +97,88 @@ export function AgentPassengerPanel() {
         )}
       </div>
 
+      {/* Configuration Required Message */}
+      {noFlights && (
+        <div className="p-8 max-w-4xl mx-auto">
+          <Card className="p-8 border-amber-200 bg-gradient-to-br from-amber-50 to-white">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <User className="w-6 h-6 text-amber-600" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-xl font-semibold mb-2">Agent Console Configuration Required</h2>
+                <p className="text-muted-foreground mb-4">
+                  The Agent Re-accommodation Console requires passenger manifest data to function. 
+                  This feature is designed for individual passenger reaccommodation workflows.
+                </p>
+                
+                <div className="bg-white rounded-lg p-4 border border-amber-100 mb-4">
+                  <h3 className="font-semibold text-sm mb-2">What this console provides:</h3>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-600 mt-0.5">•</span>
+                      <span>Individual passenger details and special service requests (SSRs)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-600 mt-0.5">•</span>
+                      <span>Multiple reaccommodation options comparison with TRV scores</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-600 mt-0.5">•</span>
+                      <span><strong>"WHY this option?"</strong> - AI reasoning for each recommendation</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-600 mt-0.5">•</span>
+                      <span>Policy callouts, waivers, and tier-based protections</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-600 mt-0.5">•</span>
+                      <span>One-click re-accommodation with agent audit trails</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="bg-slate-50 rounded-lg p-4 border border-slate-200 mb-4">
+                  <h3 className="font-semibold text-sm mb-2">Required configuration:</h3>
+                  <div className="space-y-2 text-sm text-muted-foreground font-mono">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-[10px]">GET</Badge>
+                      <code>/api/reaccommodation/flights</code>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-[10px]">GET</Badge>
+                      <code>/api/reaccommodation/manifest/:flightNumber</code>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-[10px]">GET</Badge>
+                      <code>/api/reaccommodation/passenger/:pnr</code>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-3">
+                    Configure these endpoints in the backend or generate mock passenger data using <code className="bg-white px-1 py-0.5 rounded">scripts/generate_mock_data.py</code>
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Button variant="outline" onClick={() => window.location.href = '/'}>
+                    <Radar className="w-4 h-4 mr-2" />
+                    Go to Flight Monitor
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <a href="https://github.com/your-repo/docs/agent-console" target="_blank" rel="noopener noreferrer">
+                      <FileText className="w-4 h-4 mr-2" />
+                      View Documentation
+                    </a>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Main Content - Only show if flights are available */}
+      {!noFlights && (
       <div className="flex h-[calc(100vh-64px)]">
         <div className="w-[320px] bg-white border-r border-border p-6 overflow-y-auto space-y-4">
           <div className="space-y-2">
@@ -258,7 +341,7 @@ export function AgentPassengerPanel() {
                       </p>
                       <p className="text-[11px] text-muted-foreground">
                         {useAIOptions 
-                          ? 'Options generated by LangGraph agents in real-time'
+                          ? 'Options generated by APIV2 (ADK) agents in real-time'
                           : 'Switch to dynamic agent-generated recommendations'
                         }
                       </p>
@@ -532,6 +615,7 @@ export function AgentPassengerPanel() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Agent Details Modal */}
       {showAgentDetails && (
@@ -545,7 +629,7 @@ export function AgentPassengerPanel() {
                   Agent Execution Details
                 </h2>
                 <p className="text-[13px] text-muted-foreground mt-1">
-                  Complete LangGraph workflow audit trail for {selectedFlight}
+                  Complete APIV2 (ADK) workflow audit trail for {selectedFlight}
                 </p>
               </div>
               <Button
