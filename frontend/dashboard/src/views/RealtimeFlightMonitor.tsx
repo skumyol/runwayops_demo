@@ -69,8 +69,7 @@ export function RealtimeFlightMonitor() {
   const effectiveMode = data?.mode ?? sourceMode;
   const sourceMismatch = data && data.mode !== sourceMode;
 
-  const agenticBaseOverride =
-    agenticEngine === 'apiv2' ? resolveAgenticEngineBase(agenticEngine) : undefined;
+  const agenticBaseOverride = resolveAgenticEngineBase(agenticEngine);
 
   // Agentic analysis integration
   const {
@@ -90,20 +89,16 @@ export function RealtimeFlightMonitor() {
 
   const activeAnalysis = agenticAnalysis ?? latestAnalysis;
   const engineDescription = describeAgenticEngine(agenticEngine);
-  const enginePanelTitle =
-    agenticEngine === 'apiv2'
-      ? 'APIV2 Agentic Analysis'
-      : 'LangGraph Agentic Analysis';
+  const enginePanelTitle = 'APIV2 Agentic Analysis';
   const engineAvailable =
     agenticStatus?.available_engines?.includes(agenticEngine) ?? true;
   const agenticSuspended = !engineAvailable;
   const agenticSuspendedReason = agenticSuspended
     ? `Backend does not expose the ${agenticEngine.toUpperCase()} engine`
     : undefined;
-  const agenticTabEnabled =
-    Boolean(agenticStatus?.enabled) || agenticEngine === 'apiv2';
+  const agenticTabEnabled = agenticStatus?.enabled ?? true;
   const canRunAgentic =
-    !agenticSuspended && (agenticStatus?.enabled || agenticEngine === 'apiv2');
+    !agenticSuspended && (agenticStatus?.enabled ?? true);
 
   useEffect(() => {
     if (agenticAnalysis) {
@@ -198,7 +193,7 @@ export function RealtimeFlightMonitor() {
               {isRefreshing ? 'Refreshing' : 'Refresh'}
             </Button>
 
-            {(agenticStatus?.enabled || agenticEngine === 'apiv2') && (
+            {(agenticStatus?.enabled ?? true) && (
               <Button
                 variant="default"
                 size="sm"
@@ -364,9 +359,7 @@ export function RealtimeFlightMonitor() {
                         <Bot className="w-12 h-12 text-indigo-600 animate-pulse" />
                         <p className="text-lg font-semibold">Running Multi-Agent Analysis...</p>
                         <p className="text-sm text-muted-foreground">
-                          {agenticEngine === 'apiv2'
-                            ? 'APIV2 workflow executing via Google A2A Agents (predictive → orchestrator → ADK tools)'
-                            : 'LangGraph workflow executing (predictive → orchestrator → sub-agents → aggregator)'}
+                APIV2 workflow executing via Google ADK Agents (predictive → orchestrator → Gemini tools)
                         </p>
                       </div>
                     </Card>
@@ -377,9 +370,7 @@ export function RealtimeFlightMonitor() {
                       <Bot className="w-16 h-16 text-indigo-600 mx-auto mb-4" />
                       <h3 className="text-xl font-semibold mb-2">{enginePanelTitle}</h3>
                       <p className="text-muted-foreground mb-6">
-                        {agenticEngine === 'apiv2'
-                          ? 'Route the payload into google_a2a_agents_apiV2 for Gemini-orchestrated plans (Amadeus, crew legality, finance).'
-                          : 'Run the LangGraph stack locally for fast what-if simulations and regression-safe plans.'}
+                        Route the payload into google_a2a_agents_apiV2 for Gemini-orchestrated plans (Amadeus, crew legality, finance).
                       </p>
                       <Button
                         onClick={() => runAnalysis()}

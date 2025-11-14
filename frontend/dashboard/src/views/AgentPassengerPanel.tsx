@@ -351,7 +351,8 @@ export function AgentPassengerPanel() {
                     onClick={async () => {
                       if (!useAIOptions && selectedFlight) {
                         setUseAIOptions(true);
-                        await fetchAgentOptions(selectedFlight, selectedPassengerPnr || undefined);
+                        // Skip prediction since we're in reaccommodation view (disruption already confirmed)
+                        await fetchAgentOptions(selectedFlight, selectedPassengerPnr || undefined, true);
                       } else {
                         setUseAIOptions(false);
                       }

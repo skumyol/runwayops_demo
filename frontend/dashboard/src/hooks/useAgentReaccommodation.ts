@@ -1,5 +1,5 @@
 /**
- * Hook for AI-powered reaccommodation suggestions using LangGraph agents.
+ * Hook for AI-powered reaccommodation suggestions using the Google ADK (APIV2) agents.
  * 
  * This provides access to the multi-agent workflow analysis for specific flights,
  * giving real-time AI recommendations vs the static MongoDB options.

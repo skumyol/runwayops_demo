@@ -1,6 +1,6 @@
 import { MonitorMode } from '../hooks/useFlightMonitor';
 
-export type AgenticEngine = 'langgraph' | 'apiv2';
+export type AgenticEngine = 'apiv2';
 
 export interface AuditLogEntry {
   agent: string;

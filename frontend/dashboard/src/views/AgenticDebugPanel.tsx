@@ -38,8 +38,7 @@ export function AgenticDebugPanel() {
     monitorCarrier,
     monitorMode,
   } = useAgenticContext();
-  const agenticBaseOverride =
-    agenticEngine === 'apiv2' ? resolveAgenticEngineBase(agenticEngine) : undefined;
+  const agenticBaseOverride = resolveAgenticEngineBase(agenticEngine);
   const { analysis, loading, error, runAnalysis, status, checkStatus } = useAgenticAnalysis({
     airport: monitorAirport,
     carrier: monitorCarrier,

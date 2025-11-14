@@ -27,8 +27,7 @@ export function IOCQueues({ onNavigateToCohort }: IOCQueuesProps) {
   const [selectedFlights, setSelectedFlights] = useState<string[]>([]);
   const { flights, loading, error, refresh } = useReaccommodationFlights();
   const { latestAnalysis, setLatestAnalysis, agenticEngine } = useAgenticContext();
-  const agenticBaseOverride =
-    agenticEngine === 'apiv2' ? resolveAgenticEngineBase(agenticEngine) : undefined;
+  const agenticBaseOverride = resolveAgenticEngineBase(agenticEngine);
   const agenticHook = useAgenticAnalysis({
     airport: station,
     carrier: 'CX',
@@ -36,10 +35,17 @@ export function IOCQueues({ onNavigateToCohort }: IOCQueuesProps) {
     engine: agenticEngine,
     apiBaseOverride: agenticBaseOverride,
   });
-  const activeAgentic = agenticHook.analysis ?? latestAnalysis;
+  const {
+    analysis: agenticAnalysis,
+    loading: agenticLoading,
+    error: agenticError,
+    runAnalysis,
+    status: agenticStatus,
+  } = agenticHook;
+  const activeAgentic = agenticAnalysis ?? latestAnalysis;
   const engineDescription = describeAgenticEngine(agenticEngine);
   const engineAvailable =
-    agenticHook.status?.available_engines?.includes(agenticEngine) ?? true;
+    agenticStatus?.available_engines?.includes(agenticEngine) ?? true;
   const agenticSuspended = !engineAvailable;
   const agenticSuspendedReason = agenticSuspended
     ? `Backend does not expose the ${agenticEngine.toUpperCase()} engine`
@@ -47,10 +53,35 @@ export function IOCQueues({ onNavigateToCohort }: IOCQueuesProps) {
   const canRunAgentic = !agenticSuspended;
 
   useEffect(() => {
-    if (agenticHook.analysis) {
-      setLatestAnalysis(agenticHook.analysis);
+    if (agenticAnalysis) {
+      setLatestAnalysis(agenticAnalysis);
     }
-  }, [agenticHook.analysis, setLatestAnalysis]);
+  }, [agenticAnalysis, setLatestAnalysis]);
+
+  const planMatchesContext =
+    Boolean(activeAgentic) &&
+    activeAgentic?.airport?.toUpperCase() === station.toUpperCase() &&
+    activeAgentic?.carrier?.toUpperCase() === 'CX' &&
+    (activeAgentic?.engine ?? agenticEngine) === agenticEngine;
+  const relevantAgentic = planMatchesContext ? activeAgentic : null;
+
+  const autoRunKey = `${station}-${agenticEngine}-${agenticBaseOverride ?? 'default'}`;
+  const [autoRunMarker, setAutoRunMarker] = useState<string | null>(null);
+
+  useEffect(() => {
+    setAutoRunMarker(null);
+  }, [autoRunKey]);
+
+  useEffect(() => {
+    if (autoRunMarker === autoRunKey) {
+      return;
+    }
+    if (!canRunAgentic || agenticLoading || relevantAgentic) {
+      return;
+    }
+    setAutoRunMarker(autoRunKey);
+    runAnalysis();
+  }, [relevantAgentic, agenticLoading, autoRunKey, autoRunMarker, canRunAgentic, runAnalysis]);
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
@@ -68,7 +99,7 @@ export function IOCQueues({ onNavigateToCohort }: IOCQueuesProps) {
       );
     }
 
-    if (!activeAgentic) {
+    if (!relevantAgentic) {
       return (
         <Card className="p-6 border-dashed border-indigo-200 bg-indigo-50/60">
           <div className="flex flex-col gap-2">
@@ -76,18 +107,18 @@ export function IOCQueues({ onNavigateToCohort }: IOCQueuesProps) {
               Run the {engineDescription} pipeline to surface finance and re-accommodation guidance directly inside IOC.
             </p>
             <Button
-              onClick={() => agenticHook.runAnalysis()}
-              disabled={agenticHook.loading || !canRunAgentic}
+              onClick={() => runAnalysis()}
+              disabled={agenticLoading || !canRunAgentic}
               className="self-start bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60"
             >
-              {agenticHook.loading ? 'Running...' : 'Run AI analysis'}
+              {agenticLoading ? 'Running...' : 'Run AI analysis'}
             </Button>
           </div>
         </Card>
       );
     }
 
-    const plan = activeAgentic.agentic_analysis?.final_plan;
+    const plan = relevantAgentic.agentic_analysis?.final_plan;
 
     if (!plan) {
       return (
@@ -97,12 +128,12 @@ export function IOCQueues({ onNavigateToCohort }: IOCQueuesProps) {
             and re-accommodation guidance.
           </div>
           <Button
-            onClick={() => agenticHook.runAnalysis()}
-            disabled={agenticHook.loading || !canRunAgentic}
+            onClick={() => runAnalysis()}
+            disabled={agenticLoading || !canRunAgentic}
             variant="outline"
             className="self-start"
           >
-            {agenticHook.loading ? 'Running...' : 'Re-run analysis'}
+            {agenticLoading ? 'Running...' : 'Re-run analysis'}
           </Button>
         </Card>
       );
@@ -278,14 +309,14 @@ export function IOCQueues({ onNavigateToCohort }: IOCQueuesProps) {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-[18px] leading-[24px] font-semibold">AI Finance & Rebooking</h2>
           <div className="flex items-center gap-3">
-            {agenticHook.error && <span className="text-sm text-destructive">{agenticHook.error}</span>}
+            {agenticError && <span className="text-sm text-destructive">{agenticError}</span>}
             <Button
               variant="outline"
               size="sm"
-              onClick={() => agenticHook.runAnalysis()}
-              disabled={agenticHook.loading || !canRunAgentic}
+              onClick={() => runAnalysis()}
+              disabled={agenticLoading || !canRunAgentic}
             >
-              {agenticHook.loading ? 'Running...' : 'Refresh AI plan'}
+              {agenticLoading ? 'Running...' : 'Refresh AI plan'}
             </Button>
           </div>
         </div>

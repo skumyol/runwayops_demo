@@ -12,13 +12,43 @@ from typing import Any, Dict
 
 from fastapi import APIRouter, HTTPException, Query
 
-from .._agents.llm_factory import get_provider_info
+# Provider info moved to config module
 from ..config import AGENTIC_ENGINES, settings
 from ..providers import ProviderMode, resolve_provider
 from ..services.agentic import agentic_service
 from ..services.scenario_overrides import apply_debug_scenario
 
 router = APIRouter(prefix="/api/agentic", tags=["agentic"])
+
+
+def get_provider_info() -> dict[str, Any]:
+    """Get information about configured LLM provider for agentsv2.
+    
+    Returns:
+        Dictionary with provider configuration details
+    """
+    provider_configured = False
+    if settings.llm_provider == "deepseek" and settings.deepseek_api_key:
+        provider_configured = True
+    elif settings.llm_provider == "openai" and settings.openai_api_key:
+        provider_configured = True
+    
+    return {
+        "current_provider": settings.llm_provider,
+        "current_model": settings.llm_model,
+        "temperature": settings.llm_temperature,
+        "provider_configured": provider_configured,
+        "providers": {
+            "deepseek": {
+                "configured": bool(settings.deepseek_api_key),
+                "model": "deepseek-chat",
+            },
+            "openai": {
+                "configured": bool(settings.openai_api_key),
+                "model": settings.llm_model if settings.llm_provider == "openai" else "gpt-4",
+            },
+        },
+    }
 
 
 @router.post("/analyze")

@@ -8,19 +8,14 @@ export const AGENTIC_ENGINE_OPTIONS: Array<{
   helper: string;
 }> = [
   {
-    value: 'langgraph',
-    label: 'LangGraph (v1)',
-    helper: 'FastAPI-hosted graph used for hackathon + regression',
-  },
-  {
     value: 'apiv2',
     label: 'APIV2 (Google A2A)',
-    helper: 'Gemini + Amadeus pipeline described in google_a2a_agents_apiV2',
+    helper: 'Google ADK workflow (Gemini + Amadeus guidance)',
   },
 ];
 
 export const isAgenticEngine = (value: unknown): value is AgenticEngine => {
-  return value === 'langgraph' || value === 'apiv2';
+  return value === 'apiv2';
 };
 
 export const coerceAgenticEngine = (
@@ -35,7 +30,7 @@ export const getDefaultAgenticEngine = (): AgenticEngine => {
   const envValue = (import.meta.env.VITE_AGENTIC_DEFAULT_ENGINE as
     | string
     | undefined)?.toLowerCase();
-  return coerceAgenticEngine(envValue) ?? 'langgraph';
+  return coerceAgenticEngine(envValue) ?? 'apiv2';
 };
 
 export const resolveAgenticEngineBase = (
@@ -49,8 +44,5 @@ export const resolveAgenticEngineBase = (
 };
 
 export const describeAgenticEngine = (engine: AgenticEngine): string => {
-  if (engine === 'apiv2') {
-    return 'APIV2 · Google A2A Agents (Gemini + Amadeus)';
-  }
-  return 'LangGraph v1 · FastAPI workflow';
+  return 'APIV2 · Google ADK Agents (Gemini + Amadeus)';
 };

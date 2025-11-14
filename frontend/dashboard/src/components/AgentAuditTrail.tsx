@@ -1,5 +1,5 @@
 /**
- * AgentAuditTrail component - displays detailed LangGraph agent execution flow
+ * AgentAuditTrail component - displays detailed Google ADK agent execution flow
  */
 
 import React, { useState } from 'react';

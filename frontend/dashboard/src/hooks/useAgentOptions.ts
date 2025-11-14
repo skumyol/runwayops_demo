@@ -26,7 +26,7 @@ interface UseAgentOptionsResult {
   loading: boolean;
   error: string | null;
   analysisSummary: AgentOptionsResponse['analysis_summary'] | null;
-  fetchAgentOptions: (flightNumber: string, passengerPnr?: string) => Promise<void>;
+  fetchAgentOptions: (flightNumber: string, passengerPnr?: string, skipPrediction?: boolean) => Promise<void>;
   clear: () => void;
 }
 
@@ -36,7 +36,7 @@ export function useAgentOptions(): UseAgentOptionsResult {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAgentOptions = useCallback(async (flightNumber: string, passengerPnr?: string) => {
+  const fetchAgentOptions = useCallback(async (flightNumber: string, passengerPnr?: string, skipPrediction: boolean = false) => {
     setLoading(true);
     setError(null);
 
@@ -44,13 +44,19 @@ export function useAgentOptions(): UseAgentOptionsResult {
     console.group('🤖 AI Options Generation Started');
     console.log('Flight:', flightNumber);
     if (passengerPnr) console.log('Passenger:', passengerPnr);
+    console.log('Skip Prediction:', skipPrediction);
     console.log('Time:', new Date().toLocaleTimeString());
     console.groupEnd();
 
     try {
-      const url = passengerPnr
+      let url = passengerPnr
         ? `/api/agent-options/passengers/${passengerPnr}/options`
         : `/api/agent-options/flights/${flightNumber}`;
+      
+      // Add skip_prediction query param for flight-level requests
+      if (!passengerPnr && skipPrediction) {
+        url += '?skip_prediction=true';
+      }
 
       const result = await fetchJson<AgentOptionsResponse>(url);
       setAgentOptions(result.options || []);

@@ -10,7 +10,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
-from .._agents.llm_factory import LLMProviderError
+# LLM errors are handled as generic exceptions
 from ..config import settings
 from ..services.agentic import agentic_service
 from ..services import reaccommodation as data_service
@@ -108,11 +108,6 @@ async def analyze_flight_with_agents(
             },
         }
     
-    except LLMProviderError as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"LLM provider error: {str(e)}"
-        )
     except Exception as e:
         raise HTTPException(
             status_code=500,
