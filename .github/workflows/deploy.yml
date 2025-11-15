@@ -1,0 +1,39 @@
+name: Deploy to Google Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+        with:
+          project_id: runwayops-478106
+
+      - name: Create backend env file
+        run: |
+          printf '%s\n' "$BACKEND_ENV" > backend/.env.deploy
+        env:
+          BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
+
+      - name: Deploy application
+        run: |
+          chmod +x ./deploy.sh
+          ./deploy.sh
