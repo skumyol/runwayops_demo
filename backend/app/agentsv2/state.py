@@ -55,11 +55,19 @@ class DisruptionState(BaseModel):
         default_factory=list,
         description="Results from what-if scenario simulations"
     )
+    what_if_templates: List[Dict[str, Any]] = Field(
+        default_factory=list,
+        description="Raw scenario templates before enrichment"
+    )
     
     # Transparency & audit
     audit_log: List[Dict[str, Any]] = Field(
         default_factory=list,
         description="Immutable append-only log of all agent reasoning"
+    )
+    decision_log: List[Dict[str, Any]] = Field(
+        default_factory=list,
+        description="Chronological decision trail from every agent"
     )
     
     # Final aggregated output
@@ -97,6 +105,28 @@ def log_reasoning(
         "timestamp": datetime.now().isoformat(),
     }
     state.audit_log.append(trace)
+    return state
+
+
+def record_decision(
+    state: DisruptionState,
+    agent_name: str,
+    decision: str,
+    *,
+    category: str | None = None,
+    scenarios: List[str] | None = None,
+    data: Dict[str, Any] | None = None,
+) -> DisruptionState:
+    """Record a structured decision for transparent what-if analysis."""
+    entry = {
+        "agent": agent_name,
+        "decision": decision,
+        "category": category or "general",
+        "scenarios": scenarios or ["global"],
+        "data": data or {},
+        "timestamp": datetime.utcnow().isoformat(),
+    }
+    state.decision_log.append(entry)
     return state
 
 

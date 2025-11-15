@@ -53,6 +53,7 @@ class DisruptionResponse(BaseModel):
     crew_rotation: Dict[str, Any] = Field(default_factory=dict)
     simulation_results: list = Field(default_factory=list)
     audit_log: list = Field(default_factory=list)
+    decision_log: list = Field(default_factory=list)
     error: str = Field(None, description="Error message if failed")
 
 
@@ -91,7 +92,8 @@ async def analyze_disruption(flight_data: FlightData) -> DisruptionResponse:
             finance_estimate=result.get("finance_estimate", {}),
             crew_rotation=result.get("crew_rotation", {}),
             simulation_results=result.get("simulation_results", []),
-            audit_log=result.get("audit_log", [])
+            audit_log=result.get("audit_log", []),
+            decision_log=result.get("decision_log", []),
         )
         
         logger.info(

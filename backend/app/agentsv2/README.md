@@ -234,6 +234,34 @@ LLM_PROVIDER=google  # or openai, anthropic
 GOOGLE_API_KEY=your-api-key
 ```
 
+## LLM Configuration (Agents v2)
+
+The ADK agents now invoke the configured LLM provider to craft orchestration
+plans, risk assessments, finance summaries, and crew actions. Configure the
+provider in `backend/.env`:
+
+```bash
+AGENTIC_ENABLED=true
+LLM_PROVIDER=openai        # or openrouter / deepseek / gemini
+LLM_MODEL=gpt-4o           # model depends on provider
+LLM_TEMPERATURE=0.2
+OPENAI_API_KEY=sk-...
+```
+
+Sample configurations for every provider live in `PROVIDER_EXAMPLES.md`. If an
+LLM is not configured, the agents fall back to deterministic heuristics and
+log a warning, so the workflow remains functional for local testing.
+
+## Decision Transparency & What-If Analysis
+
+- Every agent now records structured decisions into `decision_log`, which is
+  returned by `/api/v2/agents/analyze` and persisted alongside the final plan.
+- What-if scenarios were rebuilt to include **per-agent decision traces** so
+  ops teams can review exactly how each conclusion was reached for scenarios
+  like `delay_3hr` and `crew_unavailable`.
+- The audit log remains for detailed prompts/responses, while `decision_log`
+  is optimized for dashboards and compliance exports.
+
 ## Dependencies
 
 Current (standalone):

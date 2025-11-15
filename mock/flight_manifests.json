@@ -44,7 +44,7 @@
       "blockMinutes": 780,
       "aircraft": "Airbus A350-1000",
       "statusText": "Weather reroute in effect",
-      "updatedAt": "2025-11-14T12:40:03.834675+00:00"
+      "updatedAt": "2025-11-15T10:49:36.904293+00:00"
     },
     "passengerIds": [
       "UD667R",
@@ -330,8 +330,8 @@
     "options": [
       {
         "id": "A",
-        "departureTime": "21:05",
-        "arrivalTime": "10:05+1",
+        "departureTime": "19:14",
+        "arrivalTime": "08:14+1",
         "route": "HKG → LHR",
         "cabin": "J",
         "seats": 20,
@@ -366,8 +366,8 @@
       },
       {
         "id": "B",
-        "departureTime": "01:05",
-        "arrivalTime": "14:05",
+        "departureTime": "23:14",
+        "arrivalTime": "12:14+1",
         "route": "HKG → LHR",
         "cabin": "J",
         "seats": 24,
@@ -395,8 +395,8 @@
       },
       {
         "id": "C",
-        "departureTime": "05:05",
-        "arrivalTime": "18:05",
+        "departureTime": "03:14",
+        "arrivalTime": "16:14",
         "route": "HKG → LHR",
         "cabin": "W",
         "seats": 7,
@@ -528,7 +528,7 @@
         "cabin": "Y"
       }
     ],
-    "disruptionId": "DIS-20251114-CX255"
+    "disruptionId": "DIS-20251115-CX255"
   },
   {
     "flightNumber": "CX520",
@@ -575,7 +575,7 @@
       "blockMinutes": 245,
       "aircraft": "Airbus A350-900",
       "statusText": "Awaiting ATC slot",
-      "updatedAt": "2025-11-14T12:40:03.915069+00:00"
+      "updatedAt": "2025-11-15T10:49:36.988068+00:00"
     },
     "passengerIds": [
       "HO069W",
@@ -844,8 +844,8 @@
     "options": [
       {
         "id": "A",
-        "departureTime": "21:44",
-        "arrivalTime": "01:49+1",
+        "departureTime": "19:53",
+        "arrivalTime": "23:58",
         "route": "HKG → NRT",
         "cabin": "J",
         "seats": 14,
@@ -879,8 +879,8 @@
       },
       {
         "id": "B",
-        "departureTime": "01:44",
-        "arrivalTime": "05:49",
+        "departureTime": "23:53",
+        "arrivalTime": "03:58+1",
         "route": "HKG → NRT",
         "cabin": "Y",
         "seats": 30,
@@ -910,8 +910,8 @@
       },
       {
         "id": "C",
-        "departureTime": "05:44",
-        "arrivalTime": "09:49",
+        "departureTime": "03:53",
+        "arrivalTime": "07:58",
         "route": "HKG → NRT",
         "cabin": "J",
         "seats": 22,
@@ -1047,7 +1047,7 @@
         "cabin": "Y"
       }
     ],
-    "disruptionId": "DIS-20251114-CX520"
+    "disruptionId": "DIS-20251115-CX520"
   },
   {
     "flightNumber": "CX903",
@@ -1090,7 +1090,7 @@
       "blockMinutes": 140,
       "aircraft": "Airbus A321neo",
       "statusText": "Crew legality risk",
-      "updatedAt": "2025-11-14T12:40:03.959317+00:00"
+      "updatedAt": "2025-11-15T10:49:37.037810+00:00"
     },
     "passengerIds": [
       "BJ764M",
@@ -1243,8 +1243,8 @@
     "options": [
       {
         "id": "A",
-        "departureTime": "20:58",
-        "arrivalTime": "23:18",
+        "departureTime": "19:07",
+        "arrivalTime": "21:27",
         "route": "HKG → MNL",
         "cabin": "W",
         "seats": 10,
@@ -1268,8 +1268,8 @@
       },
       {
         "id": "B",
-        "departureTime": "00:58",
-        "arrivalTime": "03:18",
+        "departureTime": "23:07",
+        "arrivalTime": "01:27+1",
         "route": "HKG → MNL",
         "cabin": "W",
         "seats": 23,
@@ -1297,8 +1297,8 @@
       },
       {
         "id": "C",
-        "departureTime": "04:58",
-        "arrivalTime": "07:18",
+        "departureTime": "03:07",
+        "arrivalTime": "05:27",
         "route": "HKG → MNL",
         "cabin": "Y",
         "seats": 28,
@@ -1427,7 +1427,7 @@
         "cabin": "Y"
       }
     ],
-    "disruptionId": "DIS-20251114-CX903"
+    "disruptionId": "DIS-20251115-CX903"
   },
   {
     "flightNumber": "CX865",
@@ -1478,7 +1478,7 @@
       "blockMinutes": 720,
       "aircraft": "Boeing 777-300ER",
       "statusText": "MX release pending",
-      "updatedAt": "2025-11-14T12:40:04.063258+00:00"
+      "updatedAt": "2025-11-15T10:49:37.156596+00:00"
     },
     "passengerIds": [
       "KA287Q",
@@ -1810,8 +1810,8 @@
     "options": [
       {
         "id": "A",
-        "departureTime": "20:36",
-        "arrivalTime": "08:36+1",
+        "departureTime": "18:45",
+        "arrivalTime": "06:45+1",
         "route": "HKG → SFO",
         "cabin": "Y",
         "seats": 5,
@@ -1846,8 +1846,8 @@
       },
       {
         "id": "B",
-        "departureTime": "00:36",
-        "arrivalTime": "12:36",
+        "departureTime": "22:45",
+        "arrivalTime": "10:45+1",
         "route": "HKG → SFO",
         "cabin": "J",
         "seats": 16,
@@ -1875,8 +1875,8 @@
       },
       {
         "id": "C",
-        "departureTime": "04:36",
-        "arrivalTime": "16:36",
+        "departureTime": "02:45",
+        "arrivalTime": "14:45",
         "route": "HKG → SFO",
         "cabin": "Y",
         "seats": 33,
@@ -2004,7 +2004,7 @@
         "cabin": "Y"
       }
     ],
-    "disruptionId": "DIS-20251114-CX865"
+    "disruptionId": "DIS-20251115-CX865"
   },
   {
     "flightNumber": "CX315",
@@ -2051,7 +2051,7 @@
       "blockMinutes": 740,
       "aircraft": "Airbus A350-900",
       "statusText": "Awaiting ATC slot",
-      "updatedAt": "2025-11-14T12:40:04.135867+00:00"
+      "updatedAt": "2025-11-15T10:49:37.233874+00:00"
     },
     "passengerIds": [
       "JU889X",
@@ -2305,8 +2305,8 @@
     "options": [
       {
         "id": "A",
-        "departureTime": "20:57",
-        "arrivalTime": "09:17+1",
+        "departureTime": "19:06",
+        "arrivalTime": "07:26+1",
         "route": "HKG → CDG",
         "cabin": "Y",
         "seats": 21,
@@ -2341,8 +2341,8 @@
       },
       {
         "id": "B",
-        "departureTime": "00:57",
-        "arrivalTime": "13:17",
+        "departureTime": "23:06",
+        "arrivalTime": "11:26+1",
         "route": "HKG → CDG",
         "cabin": "J",
         "seats": 20,
@@ -2377,8 +2377,8 @@
       },
       {
         "id": "C",
-        "departureTime": "04:57",
-        "arrivalTime": "17:17",
+        "departureTime": "03:06",
+        "arrivalTime": "15:26",
         "route": "HKG → CDG",
         "cabin": "Y",
         "seats": 30,
@@ -2503,7 +2503,7 @@
         "cabin": "Y"
       }
     ],
-    "disruptionId": "DIS-20251114-CX315"
+    "disruptionId": "DIS-20251115-CX315"
   },
   {
     "flightNumber": "CX872",
@@ -2554,7 +2554,7 @@
       "blockMinutes": 760,
       "aircraft": "Boeing 777-300ER",
       "statusText": "Weather reroute in effect",
-      "updatedAt": "2025-11-14T12:40:04.212919+00:00"
+      "updatedAt": "2025-11-15T10:49:37.317510+00:00"
     },
     "passengerIds": [
       "RQ479D",
@@ -2827,8 +2827,8 @@
     "options": [
       {
         "id": "A",
-        "departureTime": "19:57",
-        "arrivalTime": "08:37+1",
+        "departureTime": "18:06",
+        "arrivalTime": "06:46+1",
         "route": "HKG → LAX",
         "cabin": "Y",
         "seats": 35,
@@ -2852,8 +2852,8 @@
       },
       {
         "id": "B",
-        "departureTime": "23:57",
-        "arrivalTime": "12:37+1",
+        "departureTime": "22:06",
+        "arrivalTime": "10:46+1",
         "route": "HKG → LAX",
         "cabin": "Y",
         "seats": 16,
@@ -2883,8 +2883,8 @@
       },
       {
         "id": "C",
-        "departureTime": "03:57",
-        "arrivalTime": "16:37",
+        "departureTime": "02:06",
+        "arrivalTime": "14:46",
         "route": "HKG → LAX",
         "cabin": "W",
         "seats": 35,
@@ -3015,7 +3015,7 @@
         "cabin": "W"
       }
     ],
-    "disruptionId": "DIS-20251114-CX872"
+    "disruptionId": "DIS-20251115-CX872"
   },
   {
     "flightNumber": "CX708",
@@ -3062,7 +3062,7 @@
       "blockMinutes": 210,
       "aircraft": "Airbus A330-300",
       "statusText": "MX release pending",
-      "updatedAt": "2025-11-14T12:40:04.265137+00:00"
+      "updatedAt": "2025-11-15T10:49:37.375414+00:00"
     },
     "passengerIds": [
       "DK965D",
@@ -3250,8 +3250,8 @@
     "options": [
       {
         "id": "A",
-        "departureTime": "19:43",
-        "arrivalTime": "23:13",
+        "departureTime": "17:52",
+        "arrivalTime": "21:22",
         "route": "HKG → SIN",
         "cabin": "Y",
         "seats": 15,
@@ -3286,8 +3286,8 @@
       },
       {
         "id": "B",
-        "departureTime": "23:43",
-        "arrivalTime": "03:13+1",
+        "departureTime": "21:52",
+        "arrivalTime": "01:22+1",
         "route": "HKG → SIN",
         "cabin": "W",
         "seats": 29,
@@ -3315,8 +3315,8 @@
       },
       {
         "id": "C",
-        "departureTime": "03:43",
-        "arrivalTime": "07:13",
+        "departureTime": "01:52",
+        "arrivalTime": "05:22",
         "route": "HKG → SIN",
         "cabin": "J",
         "seats": 6,
@@ -3444,7 +3444,7 @@
         "cabin": "Y"
       }
     ],
-    "disruptionId": "DIS-20251114-CX708"
+    "disruptionId": "DIS-20251115-CX708"
   },
   {
     "flightNumber": "CX255",
@@ -3491,7 +3491,7 @@
       "blockMinutes": 780,
       "aircraft": "Airbus A350-1000",
       "statusText": "Crew legality risk",
-      "updatedAt": "2025-11-14T12:40:04.342819+00:00"
+      "updatedAt": "2025-11-15T10:49:37.452617+00:00"
     },
     "passengerIds": [
       "IL937M",
@@ -3744,8 +3744,8 @@
     "options": [
       {
         "id": "A",
-        "departureTime": "19:24",
-        "arrivalTime": "08:24+1",
+        "departureTime": "17:33",
+        "arrivalTime": "06:33+1",
         "route": "HKG → LHR",
         "cabin": "W",
         "seats": 31,
@@ -3772,8 +3772,8 @@
       },
       {
         "id": "B",
-        "departureTime": "23:24",
-        "arrivalTime": "12:24+1",
+        "departureTime": "21:33",
+        "arrivalTime": "10:33+1",
         "route": "HKG → LHR",
         "cabin": "J",
         "seats": 10,
@@ -3808,8 +3808,8 @@
       },
       {
         "id": "C",
-        "departureTime": "03:24",
-        "arrivalTime": "16:24",
+        "departureTime": "01:33",
+        "arrivalTime": "14:33",
         "route": "HKG → LHR",
         "cabin": "J",
         "seats": 8,
@@ -3937,7 +3937,7 @@
         "cabin": "Y"
       }
     ],
-    "disruptionId": "DIS-20251114-CX255"
+    "disruptionId": "DIS-20251115-CX255"
   },
   {
     "flightNumber": "CX520",
@@ -3984,7 +3984,7 @@
       "blockMinutes": 245,
       "aircraft": "Airbus A350-900",
       "statusText": "Weather reroute in effect",
-      "updatedAt": "2025-11-14T12:40:04.425859+00:00"
+      "updatedAt": "2025-11-15T10:49:37.544366+00:00"
     },
     "passengerIds": [
       "CO889V",
@@ -4249,8 +4249,8 @@
     "options": [
       {
         "id": "A",
-        "departureTime": "19:44",
-        "arrivalTime": "23:49",
+        "departureTime": "17:53",
+        "arrivalTime": "21:58",
         "route": "HKG → NRT",
         "cabin": "W",
         "seats": 37,
@@ -4285,8 +4285,8 @@
       },
       {
         "id": "B",
-        "departureTime": "23:44",
-        "arrivalTime": "03:49+1",
+        "departureTime": "21:53",
+        "arrivalTime": "01:58+1",
         "route": "HKG → NRT",
         "cabin": "J",
         "seats": 37,
@@ -4314,8 +4314,8 @@
       },
       {
         "id": "C",
-        "departureTime": "03:44",
-        "arrivalTime": "07:49",
+        "departureTime": "01:53",
+        "arrivalTime": "05:58",
         "route": "HKG → NRT",
         "cabin": "W",
         "seats": 26,
@@ -4447,7 +4447,7 @@
         "cabin": "W"
       }
     ],
-    "disruptionId": "DIS-20251114-CX520"
+    "disruptionId": "DIS-20251115-CX520"
   },
   {
     "flightNumber": "CX903",
@@ -4490,7 +4490,7 @@
       "blockMinutes": 140,
       "aircraft": "Airbus A321neo",
       "statusText": "Weather reroute in effect",
-      "updatedAt": "2025-11-14T12:40:04.490080+00:00"
+      "updatedAt": "2025-11-15T10:49:37.608205+00:00"
     },
     "passengerIds": [
       "XR107Y",
@@ -4696,8 +4696,8 @@
     "options": [
       {
         "id": "A",
-        "departureTime": "19:35",
-        "arrivalTime": "21:55",
+        "departureTime": "17:44",
+        "arrivalTime": "20:04",
         "route": "HKG → MNL",
         "cabin": "W",
         "seats": 16,
@@ -4727,8 +4727,8 @@
       },
       {
         "id": "B",
-        "departureTime": "23:35",
-        "arrivalTime": "01:55+1",
+        "departureTime": "21:44",
+        "arrivalTime": "00:04+1",
         "route": "HKG → MNL",
         "cabin": "Y",
         "seats": 18,
@@ -4758,8 +4758,8 @@
       },
       {
         "id": "C",
-        "departureTime": "03:35",
-        "arrivalTime": "05:55",
+        "departureTime": "01:44",
+        "arrivalTime": "04:04",
         "route": "HKG → MNL",
         "cabin": "J",
         "seats": 25,
@@ -4894,7 +4894,7 @@
         "cabin": "Y"
       }
     ],
-    "disruptionId": "DIS-20251114-CX903"
+    "disruptionId": "DIS-20251115-CX903"
   },
   {
     "flightNumber": "CX865",
@@ -4945,7 +4945,7 @@
       "blockMinutes": 720,
       "aircraft": "Boeing 777-300ER",
       "statusText": "Crew legality risk",
-      "updatedAt": "2025-11-14T12:40:04.565930+00:00"
+      "updatedAt": "2025-11-15T10:49:37.685364+00:00"
     },
     "passengerIds": [
       "KH299Q",
@@ -5197,8 +5197,8 @@
     "options": [
       {
         "id": "A",
-        "departureTime": "19:47",
-        "arrivalTime": "07:47+1",
+        "departureTime": "17:56",
+        "arrivalTime": "05:56+1",
         "route": "HKG → SFO",
         "cabin": "Y",
         "seats": 39,
@@ -5225,8 +5225,8 @@
       },
       {
         "id": "B",
-        "departureTime": "23:47",
-        "arrivalTime": "11:47+1",
+        "departureTime": "21:56",
+        "arrivalTime": "09:56+1",
         "route": "HKG → SFO",
         "cabin": "Y",
         "seats": 33,
@@ -5258,8 +5258,8 @@
       },
       {
         "id": "C",
-        "departureTime": "03:47",
-        "arrivalTime": "15:47",
+        "departureTime": "01:56",
+        "arrivalTime": "13:56",
         "route": "HKG → SFO",
         "cabin": "Y",
         "seats": 34,
@@ -5388,7 +5388,7 @@
         "cabin": "Y"
       }
     ],
-    "disruptionId": "DIS-20251114-CX865"
+    "disruptionId": "DIS-20251115-CX865"
   },
   {
     "flightNumber": "CX315",
@@ -5435,7 +5435,7 @@
       "blockMinutes": 740,
       "aircraft": "Airbus A350-900",
       "statusText": "MX release pending",
-      "updatedAt": "2025-11-14T12:40:04.667307+00:00"
+      "updatedAt": "2025-11-15T10:49:37.784714+00:00"
     },
     "passengerIds": [
       "PQ961C",
@@ -5754,8 +5754,8 @@
     "options": [
       {
         "id": "A",
-        "departureTime": "21:50",
-        "arrivalTime": "10:10+1",
+        "departureTime": "19:59",
+        "arrivalTime": "08:19+1",
         "route": "HKG → CDG",
         "cabin": "W",
         "seats": 12,
@@ -5786,8 +5786,8 @@
       },
       {
         "id": "B",
-        "departureTime": "01:50",
-        "arrivalTime": "14:10",
+        "departureTime": "23:59",
+        "arrivalTime": "12:19+1",
         "route": "HKG → CDG",
         "cabin": "Y",
         "seats": 17,
@@ -5817,8 +5817,8 @@
       },
       {
         "id": "C",
-        "departureTime": "05:50",
-        "arrivalTime": "18:10",
+        "departureTime": "03:59",
+        "arrivalTime": "16:19",
         "route": "HKG → CDG",
         "cabin": "J",
         "seats": 40,
@@ -5953,6 +5953,6 @@
         "cabin": "Y"
       }
     ],
-    "disruptionId": "DIS-20251114-CX315"
+    "disruptionId": "DIS-20251115-CX315"
   }
 ]

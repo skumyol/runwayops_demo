@@ -147,6 +147,7 @@ class AgenticService:
                 "disruption_detected": result.get("disruption_detected"),
                 "audit_log": result["audit_log"],
                 "final_plan": result.get("final_plan", {}),
+                "decision_log": result.get("decision_log", []),
             }
             await audit_collection.insert_one(audit_doc)
 
@@ -160,6 +161,7 @@ class AgenticService:
                 "scenarios": result["simulation_results"],
                 "risk_assessment": result.get("risk_assessment", {}),
                 "final_plan": result.get("final_plan", {}),
+                "decision_log": result.get("decision_log", []),
             }
             await sim_collection.insert_one(sim_doc)
 

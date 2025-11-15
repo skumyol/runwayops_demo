@@ -4,13 +4,14 @@ These tools implement domain-specific functionality for flight disruption
 management, including predictive signals, rebooking, finance, and crew scheduling.
 """
 
-import json
 import logging
 import random
 from typing import Any, Dict, List
 
 from ..services.predictive_signals import compute_predictive_signals
 from ..config import settings
+
+logger = logging.getLogger(__name__)
 
 # Import Amadeus tools conditionally
 try:
@@ -23,9 +24,6 @@ try:
 except ImportError:
     AMADEUS_AVAILABLE = False
     logger.warning("Amadeus tools not available - falling back to synthetic data")
-
-
-logger = logging.getLogger(__name__)
 
 
 # Tool decorator for ADK compatibility

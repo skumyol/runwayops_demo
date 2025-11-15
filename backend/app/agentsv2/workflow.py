@@ -136,11 +136,16 @@ class DisruptionWorkflowADK:
             import asyncio
             
             # Run sub-agents in parallel
+            logger.info("🔄 Running parallel sub-agents...")
             risk_task = self.risk_agent.run(state)
+            logger.info("🔄 Risk agent complete")
             rebooking_task = self.rebooking_agent.run(state)
+            logger.info("🔄 Rebooking agent complete")
             finance_task = self.finance_agent.run(state)
+            logger.info("🔄 Finance agent complete")
             crew_task = self.crew_agent.run(state)
-            
+            logger.info("🔄 Crew agent complete")
+            print("#############")
             # Wait for all to complete
             results = await asyncio.gather(
                 risk_task,
@@ -193,6 +198,7 @@ class DisruptionWorkflowADK:
             "finance_estimate": state.finance_estimate,
             "crew_rotation": state.crew_rotation,
             "simulation_results": state.simulation_results,
+            "decision_log": state.decision_log,
         }
     
     def run_sync(self, flight_data: Dict[str, Any]) -> Dict[str, Any]:
