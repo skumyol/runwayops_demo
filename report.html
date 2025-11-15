@@ -503,7 +503,7 @@
                   end
 
                   subgraph &#34;Core Multi-Agent System&#34;
-                    C1[Orchestrator Agent<br/>LLM-Powered]
+                    C1[Orchestrator Agent<br/>Google ADK / APIV2]
                   end
 
                   subgraph &#34;Specialized Sub-Agents&#34;
@@ -514,13 +514,13 @@
                   end
 
                   subgraph &#34;Data Storage & Audit&#34;
-                    E1[Operational Database<br/>PostgreSQL]
-                    E2[Immutable Audit Trail<br/>Blackbox]
+                    E1[Operational Database<br/>MongoDB (Flights, Pax, Crew)]
+                    E2[Agentic Audit & Sim History<br/>MongoDB Collections]
                   end
 
                   subgraph &#34;User Interfaces&#34;
-                    F1[Operations Dashboard<br/>Human-in-the-Loop]
-                    F2[Customer Mobile App<br/>and Voice Assistant]
+                    F1[IOC & Realtime Monitor<br/>React + Vite Dashboard]
+                    F2[What-If Scenario & Agent Console<br/>React Web UI]
                   end
 
                   %% Data Flow

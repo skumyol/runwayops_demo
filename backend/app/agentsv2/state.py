@@ -5,7 +5,7 @@ This module defines the state structure and logging utilities.
 """
 
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 from pydantic import BaseModel, Field
 
 
@@ -76,9 +76,19 @@ class DisruptionState(BaseModel):
         description="Final aggregated action plan"
     )
     
+    # Progress tracking for real-time updates
+    progress_updates: List[Dict[str, Any]] = Field(
+        default_factory=list,
+        description="Real-time progress updates for UI feedback"
+    )
+    
+    # Progress callback (not serialized)
+    _progress_callback: Optional[Callable[[str, str, str], None]] = None
+    
     class Config:
         """Pydantic configuration."""
         arbitrary_types_allowed = True
+        underscore_attrs_are_private = True
 
 
 def log_reasoning(
@@ -130,13 +140,51 @@ def record_decision(
     return state
 
 
-def create_initial_state(flight_data: Dict[str, Any]) -> DisruptionState:
+def record_progress(
+    state: DisruptionState,
+    agent_name: str,
+    status: str,
+    message: str
+) -> DisruptionState:
+    """Record progress update for real-time UI feedback.
+    
+    Args:
+        state: Current disruption state
+        agent_name: Name of the agent reporting progress
+        status: Status (started, running, complete, error)
+        message: Human-readable progress message
+        
+    Returns:
+        Updated state with progress entry
+    """
+    progress = {
+        "agent": agent_name,
+        "status": status,
+        "message": message,
+        "timestamp": datetime.now().isoformat(),
+    }
+    state.progress_updates.append(progress)
+    
+    # Call progress callback if set (for SSE streaming)
+    if state._progress_callback:
+        state._progress_callback(agent_name, status, message)
+    
+    return state
+
+
+def create_initial_state(
+    flight_data: Dict[str, Any],
+    progress_callback: Optional[Callable[[str, str, str], None]] = None
+) -> DisruptionState:
     """Create initial state from flight monitor data.
     
     Args:
         flight_data: Output from FlightMonitorProvider
+        progress_callback: Optional callback for real-time progress updates
         
     Returns:
         Initialized DisruptionState
     """
-    return DisruptionState(input_data=flight_data)
+    state = DisruptionState(input_data=flight_data)
+    state._progress_callback = progress_callback
+    return state

@@ -104,8 +104,7 @@ if [[ "${SEED}" -eq 1 ]]; then
   echo "Seeding Mongo with ${FLIGHT_COUNT} flights (${BASE_PAX} pax avg)..."
   UV_CACHE_DIR="${UV_CACHE_DIR}" uv run --project "${ROOT_DIR}/backend" python "${ROOT_DIR}/scripts/generate_mock_data.py" \
     --flights "${FLIGHT_COUNT}" \
-    --base-passengers "${BASE_PAX}" \
-    --no-kafka
+    --base-passengers "${BASE_PAX}"
 fi
 
 if [[ "${START_TICKER}" -eq 1 ]]; then

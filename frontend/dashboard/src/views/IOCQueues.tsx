@@ -86,6 +86,28 @@ export function IOCQueues({ onNavigateToCohort }: IOCQueuesProps) {
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
 
+  const formatPriceBadge = (price?: { total?: number; currency?: string }) => {
+    if (!price || typeof price.total !== 'number') return null;
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: price.currency || 'USD',
+      maximumFractionDigits: 0,
+    }).format(price.total);
+  };
+
+  const formatShortTime = (value?: string) => {
+    if (!value) return '—';
+    try {
+      return new Intl.DateTimeFormat('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }).format(new Date(value));
+    } catch {
+      return value;
+    }
+  };
+
   const renderAgenticSection = () => {
     if (agenticSuspended) {
       return (
@@ -143,6 +165,13 @@ export function IOCQueues({ onNavigateToCohort }: IOCQueuesProps) {
     const rebooking = plan.rebooking_plan;
     const financeBreakdown = finance?.breakdown ?? [];
     const rebookingActions = rebooking?.actions ?? [];
+    const rebookingDataSource = rebooking?.data_source === 'amadeus' ? 'Amadeus (live)' : 'Synthetic (playbook)';
+    const flightAlternatives = Array.isArray(rebooking?.flight_options?.alternatives)
+      ? (rebooking?.flight_options?.alternatives as Array<Record<string, any>>)
+      : [];
+    const hotelOptions = Array.isArray(rebooking?.hotel_options?.hotels)
+      ? (rebooking?.hotel_options?.hotels as Array<Record<string, any>>)
+      : [];
 
     return (
       <div className="space-y-3">
@@ -183,6 +212,12 @@ export function IOCQueues({ onNavigateToCohort }: IOCQueuesProps) {
                 {typeof rebooking?.estimated_pax === 'number' ? `${rebooking.estimated_pax} pax` : 'N/A'}
               </Badge>
             </div>
+            <div className="text-xs text-muted-foreground mb-2">
+              Data source:{' '}
+              <span className={rebooking?.data_source === 'amadeus' ? 'text-primary font-semibold' : undefined}>
+                {rebookingDataSource}
+              </span>
+            </div>
             <p className="text-sm text-muted-foreground mb-3">
               {rebooking?.reasoning ?? 'Re-accommodation guidance unavailable.'}
             </p>
@@ -194,6 +229,42 @@ export function IOCQueues({ onNavigateToCohort }: IOCQueuesProps) {
               </ul>
             ) : (
               <p className="text-xs text-muted-foreground">No actionable steps returned.</p>
+            )}
+            {flightAlternatives.length > 0 && (
+              <div className="mt-4 border-t border-muted/40 pt-3">
+                <p className="text-xs uppercase text-muted-foreground font-semibold mb-2">
+                  Alternative flights ({flightAlternatives.length})
+                </p>
+                <ul className="space-y-1 text-xs text-muted-foreground">
+                  {flightAlternatives.slice(0, 3).map((option) => (
+                    <li key={option.id ?? option.flight_number} className="flex items-center justify-between gap-2">
+                      <span>
+                        {option.flight_number ?? 'Flight'} · {option.departure?.airport ?? '—'} {formatShortTime(option.departure?.time)} →{' '}
+                        {option.arrival?.airport ?? '—'} {formatShortTime(option.arrival?.time)} {option.stops ? `· ${option.stops} stop` : '· nonstop'}
+                      </span>
+                      {formatPriceBadge(option.price) && (
+                        <span className="text-primary font-semibold">{formatPriceBadge(option.price)}</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {hotelOptions.length > 0 && (
+              <div className="mt-4 border-t border-muted/40 pt-3">
+                <p className="text-xs uppercase text-muted-foreground font-semibold mb-2">
+                  Hotel options ({hotelOptions.length})
+                </p>
+                <ul className="space-y-1 text-xs text-muted-foreground">
+                  {hotelOptions.slice(0, 3).map((hotel) => (
+                    <li key={hotel.id ?? hotel.name}>
+                      <span className="font-medium text-foreground">{hotel.name ?? 'Hotel'}</span>
+                      {hotel.rating && <span className="ml-2 text-[11px] text-amber-600">⭐ {hotel.rating}</span>}
+                      {formatPriceBadge(hotel.price) && <span className="ml-2 text-primary">{formatPriceBadge(hotel.price)}</span>}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </Card>
         </div>

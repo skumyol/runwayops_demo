@@ -127,4 +127,10 @@ export interface AgenticStatus {
   api_key_configured?: boolean;
   mongo_configured?: boolean;
   providers?: Record<string, unknown>;
+  apiv2_proxy?: {
+    enabled: boolean;
+    base_url?: string;
+    analyze_path?: string;
+    timeout?: number;
+  };
 }

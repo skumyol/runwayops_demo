@@ -31,6 +31,10 @@ class Settings:
     # Agentic system settings
     agentic_enabled: bool = False
     agentic_mode: str = "apiv2"
+    agentic_apiv2_base_url: str | None = None
+    agentic_apiv2_analyze_path: str = "/api/v2/agents/analyze"
+    agentic_apiv2_api_key: str | None = None
+    agentic_apiv2_timeout: float = 30.0
     llm_provider: str = "openai"  # openai, openrouter, deepseek, gemini
     llm_model: str = "gpt-4o"
     llm_temperature: float = 0.2
@@ -92,6 +96,19 @@ class Settings:
         )
         requested_engine = os.getenv("AGENTIC_MODE", self.agentic_mode).lower()
         self.agentic_mode = requested_engine if requested_engine in AGENTIC_ENGINES else "apiv2"
+        base_url = os.getenv("AGENTIC_APIV2_BASE_URL")
+        self.agentic_apiv2_base_url = base_url.rstrip("/") if base_url else None
+        analyze_path = os.getenv(
+            "AGENTIC_APIV2_ANALYZE_PATH",
+            self.agentic_apiv2_analyze_path,
+        )
+        if not analyze_path.startswith("/"):
+            analyze_path = "/" + analyze_path
+        self.agentic_apiv2_analyze_path = analyze_path
+        self.agentic_apiv2_api_key = os.getenv("AGENTIC_APIV2_API_KEY")
+        self.agentic_apiv2_timeout = float(
+            os.getenv("AGENTIC_APIV2_TIMEOUT", str(self.agentic_apiv2_timeout))
+        )
         self.llm_provider = os.getenv("LLM_PROVIDER", self.llm_provider).lower()
         self.llm_model = os.getenv("LLM_MODEL", self.llm_model)
         self.llm_temperature = float(

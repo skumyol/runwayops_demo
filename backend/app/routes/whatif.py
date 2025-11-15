@@ -6,10 +6,13 @@ without affecting actual flight data.
 
 from __future__ import annotations
 
+import asyncio
+import json
 import logging
 from typing import Any, Dict, Literal
 
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from ..config import settings
@@ -51,6 +54,186 @@ class WhatIfScenario(BaseModel):
     connection_pressure: Literal["low", "medium", "high"] | None = Field(
         None,
         description="Simulate connection pressure level"
+    )
+
+
+@router.get("/analyze-stream")
+async def analyze_whatif_scenario_stream(
+    flight_number: str = Query(..., description="Flight to analyze"),
+    airport: str = Query("HKG", description="IATA code"),
+    carrier: str = Query("CX", description="Airline designator"),
+    mode: ProviderMode | None = Query(None, description="Data source"),
+    delay_minutes: int | None = Query(None, description="Additional delay"),
+    weather_impact: Literal["none", "minor", "moderate", "severe"] | None = Query(None),
+    crew_unavailable: int | None = Query(None, description="Crew unavailable count"),
+    aircraft_issue: bool | None = Query(False, description="Aircraft maintenance issue"),
+    passenger_count_change: int | None = Query(None, description="Passenger count delta"),
+    connection_pressure: Literal["low", "medium", "high"] | None = Query(None),
+):
+    """
+    Run a what-if scenario analysis with real-time SSE updates.
+    
+    This endpoint streams progress updates as agents execute, providing
+    real-time visibility into the analysis workflow.
+    """
+    # Build scenario from query params
+    scenario = WhatIfScenario(
+        flight_number=flight_number,
+        delay_minutes=delay_minutes,
+        weather_impact=weather_impact,
+        crew_unavailable=crew_unavailable,
+        aircraft_issue=aircraft_issue,
+        passenger_count_change=passenger_count_change,
+        connection_pressure=connection_pressure,
+    )
+    
+    logger.info("=" * 80)
+    logger.info(f"🔮 WHAT-IF SCENARIO (SSE): {scenario.flight_number}")
+    logger.info("=" * 80)
+    
+    if not settings.agentic_enabled:
+        raise HTTPException(
+            status_code=503,
+            detail="What-if analysis requires AGENTIC_ENABLED=true"
+        )
+    
+    async def event_generator():
+        """Generate SSE events for real-time progress updates."""
+        try:
+            # Fetch current flight data
+            selected_mode: ProviderMode = mode or settings.default_mode  # type: ignore
+            provider = resolve_provider(selected_mode)
+            
+            try:
+                payload = await provider.get_payload(airport.upper(), carrier.upper())
+            except Exception as e:
+                error_data = json.dumps({"error": f"Failed to fetch flight data: {str(e)}"})
+                yield f"event: error\ndata: {error_data}\n\n"
+                return
+            
+            # Find the specific flight
+            flights = payload.get("flights", [])
+            flight = next(
+                (f for f in flights if f.get("flightNumber") == scenario.flight_number),
+                None
+            )
+            
+            if not flight:
+                error_data = json.dumps({"error": f"Flight {scenario.flight_number} not found"})
+                yield f"event: error\ndata: {error_data}\n\n"
+                return
+            
+            logger.info(f"📊 Baseline: {flight.get('statusCategory')} - "
+                       f"{flight.get('delayMinutes', 0)}min delay")
+            
+            # Apply scenario modifications
+            modified_payload = _apply_scenario_modifications(
+                payload.copy(),
+                flight,
+                scenario
+            )
+            
+            logger.info("🎭 Scenario modifications applied:")
+            if scenario.delay_minutes:
+                logger.info(f"   ⏱️  Additional delay: +{scenario.delay_minutes}min")
+            if scenario.weather_impact:
+                logger.info(f"   🌧️  Weather: {scenario.weather_impact}")
+            if scenario.crew_unavailable:
+                logger.info(f"   👥 Crew unavailable: {scenario.crew_unavailable}")
+            if scenario.aircraft_issue:
+                logger.info(f"   ✈️  Aircraft issue: YES")
+            
+            # Send initial event
+            yield f"event: start\ndata: {{\"message\": \"Starting analysis...\"}}\n\n"
+            
+            # Progress callback for SSE
+            def progress_callback(agent: str, status: str, message: str):
+                event_data = json.dumps({
+                    "agent": agent,
+                    "status": status,
+                    "message": message
+                })
+                # Store for later yield (can't yield from sync callback)
+                progress_queue.put_nowait(event_data)
+            
+            # Create queue for progress events
+            from queue import Queue
+            progress_queue = Queue()
+            
+            # Create a task to send queued events
+            async def send_progress_events():
+                while True:
+                    try:
+                        event_data = progress_queue.get_nowait()
+                        yield f"event: progress\ndata: {event_data}\n\n"
+                    except:
+                        await asyncio.sleep(0.1)
+            
+            # Run analysis with progress callback
+            logger.info("🚀 Running agent analysis on scenario...")
+            
+            # Note: We need to integrate progress_callback into the workflow
+            # For now, let's run analysis and poll for progress
+            analysis = await agentic_service.analyze_disruption(
+                modified_payload,
+                engine="apiv2"
+            )
+            
+            # Send progress updates from the completed analysis
+            progress_updates = analysis.get("progress_updates", [])
+            for progress in progress_updates:
+                event_data = json.dumps(progress)
+                yield f"event: progress\ndata: {event_data}\n\n"
+                await asyncio.sleep(0.1)  # Small delay for visual effect
+            
+            logger.info("✅ What-if analysis complete")
+            
+            # Send final result
+            result = {
+                "scenario": scenario.model_dump(),
+                "baseline": {
+                    "statusCategory": flight.get("statusCategory"),
+                    "delayMinutes": flight.get("delayMinutes", 0),
+                    "paxImpacted": flight.get("paxImpacted", 0),
+                },
+                "predicted_outcome": {
+                    "disruption_detected": analysis.get("disruption_detected", False),
+                    "risk_assessment": analysis.get("risk_assessment", {}),
+                    "final_plan": analysis.get("final_plan", {}),
+                    "signal_breakdown": analysis.get("signal_breakdown", {}),
+                },
+                "agentic_analysis": {
+                    "disruption_detected": analysis.get("disruption_detected", False),
+                    "risk_assessment": analysis.get("risk_assessment", {}),
+                    "final_plan": analysis.get("final_plan", {}),
+                    "signal_breakdown": analysis.get("signal_breakdown", {}),
+                    "rebooking_plan": analysis.get("rebooking_plan", {}),
+                    "finance_estimate": analysis.get("finance_estimate", {}),
+                    "crew_rotation": analysis.get("crew_rotation", {}),
+                    "simulation_results": analysis.get("simulation_results", []),
+                    "audit_log": analysis.get("audit_log", []),
+                    "progress_updates": analysis.get("progress_updates", []),
+                },
+                "comparison": _generate_comparison(flight, analysis),
+                "timestamp": analysis.get("timestamp"),
+            }
+            
+            result_data = json.dumps(result)
+            yield f"event: complete\ndata: {result_data}\n\n"
+            
+        except Exception as e:
+            logger.error(f"❌ What-if analysis failed: {e}")
+            error_data = json.dumps({"error": str(e)})
+            yield f"event: error\ndata: {error_data}\n\n"
+    
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        }
     )
 
 
@@ -157,6 +340,18 @@ async def analyze_whatif_scenario(
                 "risk_assessment": analysis.get("risk_assessment", {}),
                 "final_plan": analysis.get("final_plan", {}),
                 "signal_breakdown": analysis.get("signal_breakdown", {}),
+            },
+            "agentic_analysis": {
+                "disruption_detected": analysis.get("disruption_detected", False),
+                "risk_assessment": analysis.get("risk_assessment", {}),
+                "final_plan": analysis.get("final_plan", {}),
+                "signal_breakdown": analysis.get("signal_breakdown", {}),
+                "rebooking_plan": analysis.get("rebooking_plan", {}),
+                "finance_estimate": analysis.get("finance_estimate", {}),
+                "crew_rotation": analysis.get("crew_rotation", {}),
+                "simulation_results": analysis.get("simulation_results", []),
+                "audit_log": analysis.get("audit_log", []),
+                "progress_updates": analysis.get("progress_updates", []),
             },
             "comparison": _generate_comparison(flight, analysis),
             "timestamp": analysis.get("timestamp"),

@@ -128,6 +128,27 @@ def compute_predictive_signals(data: Dict[str, Any]) -> Dict[str, Any]:
     crew = _score_crew(data)
     aircraft = _score_aircraft(data)
 
+    weather_score = stats.get("weatherScore")
+    if weather_score is not None:
+        try:
+            weather.score = _clamp(max(weather.score, float(weather_score)))
+        except (TypeError, ValueError):
+            pass
+
+    crew_score = stats.get("crewScore")
+    if crew_score is not None:
+        try:
+            crew.score = _clamp(max(crew.score, float(crew_score)))
+        except (TypeError, ValueError):
+            pass
+
+    aircraft_score = stats.get("aircraftScore")
+    if aircraft_score is not None:
+        try:
+            aircraft.score = _clamp(max(aircraft.score, float(aircraft_score)))
+        except (TypeError, ValueError):
+            pass
+
     weighted = (
         0.4 * weather.score
         + 0.3 * crew.score

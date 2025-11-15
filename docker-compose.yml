@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: runwayops-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: runwayops
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build: ./backend
+    container_name: runwayops-backend
+    env_file:
+      - backend/.env
+    environment:
+      MONGO_URI: mongodb://mongo:27017/runwayops
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongo
+
+  frontend:
+    build:
+      context: ./frontend/dashboard
+      args:
+        - VITE_MONITOR_API=http://localhost:8000
+    container_name: runwayops-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:

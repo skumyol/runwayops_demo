@@ -33,7 +33,8 @@ async def predictive_signal_tool(
     carrier: str,
     weather_score: float,
     aircraft_score: float,
-    crew_score: float
+    crew_score: float,
+    payload: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     """Compute predictive disruption signals from flight data.
     
@@ -54,15 +55,24 @@ async def predictive_signal_tool(
             - signal_breakdown: Individual signal scores
             - likelihood: Risk category
     """
-    input_data = {
-        "airport": airport,
-        "carrier": carrier,
-        "stats": {
-            "weatherScore": weather_score,
-            "aircraftScore": aircraft_score,
-            "crewScore": crew_score
+    if payload:
+        # Copy so we do not mutate upstream state when we add fallbacks
+        input_data = dict(payload)
+        stats = dict(input_data.get("stats", {}) or {})
+        stats.setdefault("weatherScore", weather_score)
+        stats.setdefault("aircraftScore", aircraft_score)
+        stats.setdefault("crewScore", crew_score)
+        input_data["stats"] = stats
+    else:
+        input_data = {
+            "airport": airport,
+            "carrier": carrier,
+            "stats": {
+                "weatherScore": weather_score,
+                "aircraftScore": aircraft_score,
+                "crewScore": crew_score,
+            },
         }
-    }
     
     result = compute_predictive_signals(input_data)
     

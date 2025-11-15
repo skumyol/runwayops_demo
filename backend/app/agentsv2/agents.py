@@ -145,7 +145,8 @@ class PredictiveAgent:
             carrier=input_data.get("carrier", "CX"),
             weather_score=stats.get("weatherScore", 0.5),
             aircraft_score=stats.get("aircraftScore", 0.5),
-            crew_score=stats.get("crewScore", 0.5)
+            crew_score=stats.get("crewScore", 0.5),
+            payload=input_data,
         )
         
         logger.info(
@@ -331,6 +332,20 @@ class RiskAgent(LLMBackedAgent):
         risk_data = state.risk_assessment
         prompt = self._risk_prompt(risk_data)
         result = await self._invoke_llm_json(prompt)
+        
+        # Validate LLM output for consistency
+        if result:
+            risk_prob = risk_data.get("risk_probability", 0.75)
+            llm_likelihood = result.get("likelihood", 0)
+            
+            # Check if LLM output contradicts input (>20% difference)
+            if abs(llm_likelihood - risk_prob) > 0.2:
+                logger.warning(
+                    f"⚠️  Risk Agent LLM returned inconsistent likelihood: "
+                    f"{llm_likelihood:.2%} vs input {risk_prob:.2%} - using fallback"
+                )
+                result = None  # Force fallback
+        
         if not result:
             result = {
                 "likelihood": risk_data.get("risk_probability", 0.75),
@@ -548,7 +563,9 @@ class FinanceAgent(LLMBackedAgent):
         llm_estimate = await self._invoke_llm_json(prompt)
         result = tool_estimate.copy()
         if llm_estimate:
-            result.update({k: v for k, v in llm_estimate.items() if v is not None})
+            reasoning = llm_estimate.get("reasoning")
+            if reasoning is not None:
+                result["reasoning"] = reasoning
         
         state.finance_estimate = result
         state = log_reasoning(state, self.name, {"pax_count": pax_count}, result)

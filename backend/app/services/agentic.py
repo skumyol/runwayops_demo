@@ -6,6 +6,8 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, Literal
 
+import httpx
+
 from ..agentsv2 import APIV2Workflow
 from ..config import AGENTIC_ENGINES, settings
 from .mongo_client import get_client
@@ -21,6 +23,7 @@ class AgenticService:
     def __init__(self) -> None:
         self._mongo_client = None
         self._workflow_cache: dict[str, Any] = {}
+        self._remote_enabled = bool(settings.agentic_apiv2_base_url)
 
     # ------------------------------------------------------------------
     # Public API
@@ -39,10 +42,14 @@ class AgenticService:
         logger.info(f"   Flight: {flight_data.get('flight_number', 'N/A')}")
         logger.info(f"   Stats: {flight_data.get('stats', {})}")
         
-        workflow = self._get_workflow(engine_name)
-        logger.info(f"🏃 AgenticService: Running {engine_name} workflow...")
+        if self._should_proxy_to_remote(engine_name):
+            logger.info("🌐 AgenticService: Proxying to google_a2a_agents_apiV2 endpoint")
+            result = await self._run_remote_workflow(flight_data)
+        else:
+            workflow = self._get_workflow(engine_name)
+            logger.info(f"🏃 AgenticService: Running {engine_name} workflow...")
+            result = await workflow.run(flight_data)
 
-        result = await workflow.run(flight_data)
         result.setdefault("engine", engine_name)
         
         logger.info(f"✅ AgenticService: Workflow complete, persisting results...")
@@ -128,6 +135,83 @@ class AgenticService:
 
         self._workflow_cache[engine] = workflow
         return workflow
+
+    def _should_proxy_to_remote(self, engine: EngineName) -> bool:
+        return engine == "apiv2" and self._remote_enabled
+
+    def _build_remote_url(self) -> str:
+        base = settings.agentic_apiv2_base_url
+        if not base:
+            raise ValueError("AGENTIC_APIV2_BASE_URL is not configured")
+        path = settings.agentic_apiv2_analyze_path or "/api/v2/agents/analyze"
+        return f"{base}{path}"
+
+    def _prepare_remote_payload(self, flight_data: Dict[str, Any]) -> Dict[str, Any]:
+        payload = dict(flight_data)
+        timestamp = (
+            flight_data.get("timestamp")
+            or flight_data.get("generatedAt")
+            or datetime.utcnow().isoformat() + "Z"
+        )
+        payload["timestamp"] = timestamp
+        payload.setdefault("airport", flight_data.get("airport"))
+        payload.setdefault("carrier", flight_data.get("carrier"))
+        payload.setdefault("stats", flight_data.get("stats", {}))
+        payload.setdefault("flights", flight_data.get("flights", []))
+        payload.setdefault("alerts", flight_data.get("alerts", []))
+        return payload
+
+    def _transform_remote_response(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        result = {
+            "final_plan": data.get("final_plan", {}),
+            "audit_log": data.get("audit_log", []),
+            "disruption_detected": data.get("disruption_detected", False),
+            "risk_assessment": data.get("risk_assessment", {}),
+            "rebooking_plan": data.get("rebooking_plan", {}),
+            "finance_estimate": data.get("finance_estimate", {}),
+            "crew_rotation": data.get("crew_rotation", {}),
+            "simulation_results": data.get("simulation_results", []),
+            "decision_log": data.get("decision_log", []),
+        }
+        # Preserve any additional metadata for downstream consumers
+        for key in ("metadata", "trace_id", "engine"):
+            if key in data:
+                result[key] = data[key]
+        return result
+
+    async def _run_remote_workflow(self, flight_data: Dict[str, Any]) -> Dict[str, Any]:
+        url = self._build_remote_url()
+        payload = self._prepare_remote_payload(flight_data)
+        headers = {"Content-Type": "application/json"}
+        if settings.agentic_apiv2_api_key:
+            headers["Authorization"] = f"Bearer {settings.agentic_apiv2_api_key}"
+        timeout = settings.agentic_apiv2_timeout or 30.0
+        logger.info("🌍 Posting payload to %s (timeout %.1fs)", url, timeout)
+
+        try:
+            async with httpx.AsyncClient(timeout=timeout) as client:
+                response = await client.post(url, json=payload, headers=headers)
+        except httpx.RequestError as exc:  # pragma: no cover - network edge
+            raise RuntimeError(
+                f"Failed to reach google_a2a_agents_apiV2 endpoint: {exc}"
+            ) from exc
+
+        if response.status_code >= 400:
+            raise RuntimeError(
+                f"google_a2a_agents_apiV2 returned HTTP {response.status_code}: {response.text}"
+            )
+
+        data: Dict[str, Any]
+        try:
+            data = response.json()
+        except ValueError as exc:
+            raise RuntimeError("Remote APIV2 response was not valid JSON") from exc
+
+        if not data.get("success", True):
+            message = data.get("error") or data.get("detail") or "Unknown remote error"
+            raise RuntimeError(f"google_a2a_agents_apiV2 error: {message}")
+
+        return self._transform_remote_response(data)
 
     async def _persist_analysis(
         self,

@@ -49,6 +49,8 @@ function AppShell() {
   const [currentView, setCurrentView] = useState<View>('monitor');
   const [selectedFlight, setSelectedFlight] = useState<string>('');
   const [isReadOnly] = useState(false);
+  const [whatIfResults, setWhatIfResults] = useState<any | null>(null);
+  const [whatIfProgress, setWhatIfProgress] = useState<any[]>([]);
   const {
     agenticEngine,
     setAgenticEngine,
@@ -80,14 +82,12 @@ function AppShell() {
     switch (currentView) {
       case 'agent':
         return <AgentPassengerPanel />;
-      case 'queues':
-        return <IOCQueues onNavigateToCohort={handleNavigateToCohort} />;
       case 'cohort':
         return <CohortDetail flightNumber={selectedFlight} onBack={handleBackToQueue} />;
       case 'reports':
         return <Reports />;
       case 'whatif':
-        return <WhatIfScenario />;
+        return null;
       case 'monitor':
         return <RealtimeFlightMonitor />;
       case 'debug':
@@ -98,6 +98,8 @@ function AppShell() {
         return <LoadingState />;
       case 'error':
         return <ErrorState onRetry={() => setCurrentView('queues')} />;
+      case 'queues':
+        return null;
       default:
         return <RealtimeFlightMonitor />;
     }
@@ -269,6 +271,19 @@ function AppShell() {
             <Users className="w-4 h-4 text-white" />
           </div>
         </div>
+      </div>
+
+      <div className={currentView === 'queues' ? 'block' : 'hidden'} aria-hidden={currentView !== 'queues'}>
+        <IOCQueues onNavigateToCohort={handleNavigateToCohort} />
+      </div>
+
+      <div className={currentView === 'whatif' ? 'block' : 'hidden'} aria-hidden={currentView !== 'whatif'}>
+        <WhatIfScenario
+          initialResults={whatIfResults}
+          initialProgress={whatIfProgress}
+          onResultsChange={setWhatIfResults}
+          onProgressChange={setWhatIfProgress}
+        />
       </div>
 
       {renderView()}

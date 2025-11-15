@@ -17,7 +17,7 @@ from .agents import (
     CrewAgent,
     AggregatorAgent,
 )
-from .state import DisruptionState, create_initial_state
+from .state import DisruptionState, create_initial_state, record_progress
 
 
 logger = logging.getLogger(__name__)
@@ -111,11 +111,15 @@ class DisruptionWorkflowADK:
         
         try:
             # Step 1: Predictive Agent
+            state = record_progress(state, "Workflow", "started", "Starting disruption analysis...")
+            state = record_progress(state, "PredictiveAgent", "started", "Analyzing disruption signals...")
             state = await self.predictive_agent.run(state)
+            state = record_progress(state, "PredictiveAgent", "complete", "Disruption analysis complete")
             
             # Conditional routing: Only proceed if disruption detected
             if not state.disruption_detected:
                 logger.info("✓ No disruption detected - workflow complete")
+                state = record_progress(state, "Workflow", "complete", "No disruption detected - monitoring only")
                 state.final_plan = {
                     "disruption_detected": False,
                     "recommended_action": "MONITOR",
@@ -126,42 +130,55 @@ class DisruptionWorkflowADK:
             
             # Step 2: Orchestrator Agent
             logger.info("⚠️  Disruption detected - proceeding with orchestration")
+            state = record_progress(state, "OrchestratorAgent", "started", "Coordinating response strategy...")
             state = await self.orchestrator_agent.run(state)
+            state = record_progress(state, "OrchestratorAgent", "complete", "Response plan created")
             
-            # Step 3: Parallel Sub-Agents
-            # In production ADK, this would be handled by ParallelAgent
-            # For now, we run sequentially (can be parallelized with asyncio.gather)
-            logger.info("🔄 Running parallel sub-agents...")
-            
+            # Step 3: Sub-Agents with dependency order
+            # Finance agent depends on Risk + Rebooking, so run in two phases
             import asyncio
             
-            # Run sub-agents in parallel
-            logger.info("🔄 Running parallel sub-agents...")
-            risk_task = self.risk_agent.run(state)
-            logger.info("🔄 Risk agent complete")
-            rebooking_task = self.rebooking_agent.run(state)
-            logger.info("🔄 Rebooking agent complete")
-            finance_task = self.finance_agent.run(state)
-            logger.info("🔄 Finance agent complete")
-            crew_task = self.crew_agent.run(state)
-            logger.info("🔄 Crew agent complete")
-            print("#############")
-            # Wait for all to complete
-            results = await asyncio.gather(
-                risk_task,
-                rebooking_task,
-                finance_task,
-                crew_task
+            logger.info("🔄 Phase 1: Running Risk and Rebooking agents...")
+            state = record_progress(state, "SubAgents", "started", "Running impact assessment agents...")
+            
+            # Phase 1: Risk and Rebooking can run in parallel
+            state = record_progress(state, "RiskAgent", "started", "Assessing risk and impact...")
+            state = record_progress(state, "RebookingAgent", "started", "Planning passenger re-accommodation...")
+            
+            risk_state, rebooking_state = await asyncio.gather(
+                self.risk_agent.run(state),
+                self.rebooking_agent.run(state)
             )
             
-            # Merge results (all modify the same state object)
-            # In ADK, this is handled automatically
-            state = results[0]  # They all update the same state
+            # Both agents modify the same state object, use either result
+            state = risk_state
+            state = record_progress(state, "RiskAgent", "complete", "Risk assessment complete")
+            state = record_progress(state, "RebookingAgent", "complete", "Rebooking plan ready")
+            logger.info("✅ Phase 1 complete: Risk and Rebooking")
             
-            logger.info("✅ Parallel sub-agents complete")
+            # Phase 2: Finance and Crew can now run in parallel (Finance has its dependencies)
+            logger.info("🔄 Phase 2: Running Finance and Crew agents...")
+            state = record_progress(state, "FinanceAgent", "started", "Calculating financial impact...")
+            state = record_progress(state, "CrewAgent", "started", "Managing crew schedules...")
+            
+            finance_state, crew_state = await asyncio.gather(
+                self.finance_agent.run(state),
+                self.crew_agent.run(state)
+            )
+            
+            # Both agents modify the same state object, use either result
+            state = finance_state
+            state = record_progress(state, "FinanceAgent", "complete", "Cost estimate complete")
+            state = record_progress(state, "CrewAgent", "complete", "Crew plan ready")
+            logger.info("✅ Phase 2 complete: Finance and Crew")
+            
+            logger.info("✅ All sub-agents complete")
             
             # Step 4: Aggregator Agent
+            state = record_progress(state, "AggregatorAgent", "started", "Synthesizing final plan...")
             state = await self.aggregator_agent.run(state)
+            state = record_progress(state, "AggregatorAgent", "complete", "Final plan ready")
+            state = record_progress(state, "Workflow", "complete", "Analysis complete")
             
             logger.info("=" * 80)
             logger.info("✅ ADK Disruption Workflow Complete")
@@ -199,6 +216,7 @@ class DisruptionWorkflowADK:
             "crew_rotation": state.crew_rotation,
             "simulation_results": state.simulation_results,
             "decision_log": state.decision_log,
+            "progress_updates": state.progress_updates,
         }
     
     def run_sync(self, flight_data: Dict[str, Any]) -> Dict[str, Any]:

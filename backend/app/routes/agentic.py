@@ -228,6 +228,12 @@ async def get_agentic_status() -> Dict[str, Any]:
         "provider_configured": provider_info["provider_configured"],
         "mongo_configured": bool(settings.mongo_uri),
         "providers": provider_info["providers"],
+        "apiv2_proxy": {
+            "enabled": bool(settings.agentic_apiv2_base_url),
+            "base_url": settings.agentic_apiv2_base_url,
+            "analyze_path": settings.agentic_apiv2_analyze_path,
+            "timeout": settings.agentic_apiv2_timeout,
+        },
     }
 
 

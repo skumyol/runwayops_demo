@@ -86,6 +86,15 @@ EOF
   echo "✅ uv installed."
 }
 
+print_mongo_hint() {
+  echo "ℹ️  MongoDB is optional for synthetic/realtime modes."
+  echo "    It is required for 'mongo' mode, mock data scripts, and agentic history."
+  if ! command_exists mongosh && ! command_exists mongo; then
+    echo "⚠️  MongoDB shell not detected. Install MongoDB Community Server if you plan to use those features:"
+    echo "    https://www.mongodb.com/try/download/community"
+  fi
+}
+
 install_backend_dependencies() {
   echo "📦 Installing backend dependencies..."
 
@@ -116,6 +125,7 @@ main() {
   ensure_uv_installed
   install_backend_dependencies
   install_frontend_dependencies
+  print_mongo_hint
   echo "✅ Installation complete. You can now run ./run_dev.sh"
 }
 
