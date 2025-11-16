@@ -85,16 +85,26 @@ export function AgentPassengerPanel() {
   return (
     <div className="min-h-screen bg-[#EBEDEC]">
       <div className="h-16 bg-white border-b border-border flex items-center justify-between px-8">
-        <h1 className="text-[24px] leading-[32px] font-semibold">Agent Re-accommodation Console</h1>
-        {passengerError && (
-          <div className="flex items-center gap-2 text-sm text-destructive">
-            {passengerError}
-            <Button variant="outline" size="sm" onClick={refreshPassenger}>
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Retry
-            </Button>
-          </div>
-        )}
+        <div>
+          <h1 className="text-[24px] leading-[32px] font-semibold">Ops Agent Re-accommodation Console</h1>
+          <p className="text-[12px] text-muted-foreground">
+            Internal console for operations and contact centre agents. Passengers see only their own re-accommodation screen.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Badge variant="outline" className="text-[11px] px-2 py-0.5">
+            Ops / Agent View
+          </Badge>
+          {passengerError && (
+            <div className="flex items-center gap-2 text-sm text-destructive">
+              {passengerError}
+              <Button variant="outline" size="sm" onClick={refreshPassenger}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Retry
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Configuration Required Message */}
@@ -448,7 +458,18 @@ export function AgentPassengerPanel() {
               Hold Seat
             </Button>
             
-            <Button variant="outline" className="w-full h-12">
+            <Button
+              variant="outline"
+              className="w-full h-12"
+              disabled={!passenger}
+              onClick={() => {
+                if (!passenger) return;
+                const url = new URL(window.location.href);
+                url.searchParams.set('role', 'passenger');
+                url.searchParams.set('pnr', passenger.pnr);
+                window.open(url.toString(), '_blank', 'noopener,noreferrer');
+              }}
+            >
               Send Link to Passenger
             </Button>
             

@@ -17,7 +17,7 @@ export interface OptionCardProps {
   cabin: string;
   seats: number;
   trvScore: number;
-  arrivalDelta?: string;
+  arrivalDelta?: string | null;
   badges?: ('Greener' | 'Protected' | 'Fastest')[];
   whyReasons: WhyReason[];
   onClick?: () => void;

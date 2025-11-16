@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AgentPassengerPanel } from './views/AgentPassengerPanel';
+import { PassengerReaccommodationView } from './views/PassengerReaccommodationView';
 import { IOCQueues } from './views/IOCQueues';
 import { CohortDetail } from './views/CohortDetail';
 import { Reports } from './views/Reports';
@@ -46,6 +47,14 @@ const monitorModeOptions: Array<{ value: MonitorMode; label: string }> = [
 ];
 
 function AppShell() {
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const role = searchParams?.get('role');
+  const passengerPnr = searchParams?.get('pnr');
+
+  if (role === 'passenger') {
+    return <PassengerReaccommodationView pnr={passengerPnr ?? null} />;
+  }
+
   const [currentView, setCurrentView] = useState<View>('monitor');
   const [selectedFlight, setSelectedFlight] = useState<string>('');
   const [isReadOnly] = useState(false);

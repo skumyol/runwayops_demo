@@ -89,7 +89,7 @@ export function RealtimeFlightMonitor() {
 
   const activeAnalysis = agenticAnalysis ?? latestAnalysis;
   const engineDescription = describeAgenticEngine(agenticEngine);
-  const enginePanelTitle = 'APIV2 Agentic Analysis';
+  const enginePanelTitle = 'AI Ops Plan (APIV2 agents)';
   const engineAvailable =
     agenticStatus?.available_engines?.includes(agenticEngine) ?? true;
   const agenticSuspended = !engineAvailable;
@@ -365,12 +365,12 @@ export function RealtimeFlightMonitor() {
                     </Card>
                   )}
                   
-                  {!agenticLoading && !agenticAnalysis && !agenticError && (
+                  {!agenticLoading && !activeAnalysis && !agenticError && !agenticSuspended && (
                     <Card className="p-8 text-center">
                       <Bot className="w-16 h-16 text-indigo-600 mx-auto mb-4" />
                       <h3 className="text-xl font-semibold mb-2">{enginePanelTitle}</h3>
                       <p className="text-muted-foreground mb-6">
-                        Route the payload into google_a2a_agents_apiV2 for Gemini-orchestrated plans (Amadeus, crew legality, finance).
+                        Run AI analysis to generate a cross-flight disruption and recovery plan (rebooking, crew, finance) for this airport.
                       </p>
                       <Button
                         onClick={() => runAnalysis()}
